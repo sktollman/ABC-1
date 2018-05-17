@@ -1,4 +1,3 @@
-#!/usr/bin/zsh
 
 if [ $1 = "bbr" ] ; then
 	sudo tc qdisc add dev ingress root fq pacing
