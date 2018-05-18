@@ -2,7 +2,7 @@
 if [ $1 = "abc" ] ; then
 	killall python
 	python server.py &
-	mm-delay 50 mm-link --uplink-log=logs/$2-$1.log --uplink-queue=cellular --uplink-queue-args=\"packets=250,qdelay_ref=50,beta=75\" ~/ABC-1/mahimahi/traces/$2 ~/ABC-1/mahimahi/traces/$3 python client.py 
+	mm-delay 50 mm-link --uplink-log=logs/$2-$1.log --uplink-queue=cellular --uplink-queue-args=\"packets=250,qdelay_ref=50,beta=75\" ~/ABC-1/mahimahi/traces/$2 ~/ABC-1/bw48.mahi python client.py 
 	killall python
 fi
 
