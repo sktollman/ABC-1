@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+import os
+import argparse
+
 from subprocess import call
 from collections import namedtuple
 
@@ -21,6 +24,7 @@ ABC = Protocol(
     uplink_queue_args='packets=250,qdelay_ref=50,beta=75',
     commands='python client.py'
 )
+
 CUBIC = Protocol(
     name='cubic',
     pre_commands=['iperf -s -p 42425 -w 16m &'],
@@ -29,6 +33,25 @@ CUBIC = Protocol(
     uplink_queue_args='packets=100',
     commands='./start-tcp.sh cubic'
 )
+
+SPROUT = Protocol(
+    name='sprout',
+    pre_commands=["echo 'todo'"],
+    post_commands=["echo 'todo'"],
+    uplink_queue='droptail',
+    uplink_queue_args='packets=250,qdelay_ref=50,beta=75',
+    commands=''
+)
+
+VERUS = Protocol(
+    name='verus',
+    pre_commands=["echo 'todo'"],
+    post_commands=["echo 'todo'"],
+    uplink_queue='droptail',
+    uplink_queue_args='packets=250,qdelay_ref=50,beta=75',
+    commands=''
+)
+
 # TODO: fix vegas!
 # Attempt to set 'vegas' congestion control failed: No such file or directory
 VEGAS = CUBIC._replace(
@@ -53,10 +76,19 @@ BBR = CUBIC._replace(
     commands='./start-tcp.sh bbr'
 )
 
+
 PROTOS = [ABC, CUBIC, CUBIC_CODEL, CUBIC_PIE]
+PANTHEON_PROTOS = [SPROUT, VERUS]
 stats = dict()
 
-def run_exp(proto, skip=False):
+def run_exp(proto, skip=False, pantheon=False):
+    """ Runs an experiment. 
+
+    TODO: better docs. 
+
+    :param pantheon: True if the current command is to be run with support
+                     from the congestion control pantheon.
+    """
     uplink_log_file = 'logs/{}-{}.log'.format(UPLINK_EXT, proto.name)
     results_file = 'results/{}-{}.txt'.format(UPLINK_EXT, proto.name)
 
@@ -93,7 +125,6 @@ def run_exp(proto, skip=False):
             round(100 * utilization, 2), signal_delay))
 
 if __name__ == '__main__':
-    import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--skip-all-except', default=None,
         help='only perform a fresh run for the specified protocols', nargs='*')
@@ -113,12 +144,11 @@ if __name__ == '__main__':
         run_protos = filter(lambda p: p.name in args.skip_all_except, run_protos)
 
     # these two directories are required
-    import os
     if not os.path.exists('logs'): os.makedirs('logs')
     if not os.path.exists('results'): os.makedirs('results')
 
     for p in PROTOS:
-        run_exp(p, not p in run_protos)
+        run_exp(p, not p in run_protos, p in PANTHEON_PROTOS)
 
     if args.filename:
         if not args.filename.endswith('.csv'):
