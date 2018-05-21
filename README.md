@@ -15,6 +15,24 @@ Logic for ABC is in the file - mahimahi/src/packet/cellular_packet_queue.cc
 
 -----
 
+# Installing Congestion Control Modules
+
+Run `$ /sbin/sysctl net.ipv4.tcp_available_congestion_control` to see which modules are loaded in your kernel, and `$ /sbin/sysctl net.ipv4.tcp_allowed_congestion_control` to see which can be run without root permissions. We need `cubic`, `vegas`, and `bbr`.
+
+Run `$ ls -la /lib/modules/$(uname -r)/kernel/net/ipv4` to see the available modules.
+
+Run `modprobe` to load the modules that you need. For example:
+```
+$ sudo modprobe -a tcp_vegas
+$ sudo modprobe -a tcp_bbr
+```
+
+Running `$ /sbin/sysctl net.ipv4.tcp_available_congestion_control` again should now contain these modules.
+Some may still be missing from `$ /sbin/sysctl net.ipv4.tcp_allowed_congestion_control`. In this case, you will need to append to that file. When writing to the file you want to make sure that you don't remove existing protocols. For example:
+```
+echo cubic reno bbr vegas | sudo tee /proc/sys/net/ipv4/tcp_allowed_congestion_control
+```
+
 # Reproduction
 
 ## Figure 2
