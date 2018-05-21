@@ -9,14 +9,18 @@ COLORS = {
     'abc': 'blue',
     'cubicpie': 'black',
     'cubiccodel': 'green',
-    'cubic': 'brown'
+    'cubic': 'brown',
+    'bbr': 'red',
+    'vegas': 'cyan'
 }
 
 NAMES = {
     'abc': 'ABC',
     'cubicpie': 'Cubic+Pie',
     'cubiccodel': 'Cubic+Codel',
-    'cubic': 'Cubic'
+    'cubic': 'Cubic',
+    'bbr': 'BBR',
+    'vegas': 'Vegas'
 }
 
 if __name__ == '__main__':
