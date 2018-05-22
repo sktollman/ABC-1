@@ -76,9 +76,8 @@ BBR = CUBIC._replace(
     commands='./start-tcp.sh bbr'
 )
 
-
-PROTOS = [ABC, CUBIC, CUBIC_CODEL, CUBIC_PIE]
 PANTHEON_PROTOS = [SPROUT, VERUS]
+PROTOS = [BBR, VEGAS, ABC, CUBIC, CUBIC_CODEL, CUBIC_PIE]
 stats = dict()
 
 def run_exp(proto, skip=False, pantheon=False):
