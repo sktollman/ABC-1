@@ -12,12 +12,15 @@
 #      
 
 cd ~/pantheon
-sh fetch_submodules.sh
-test/setup.py --install-deps --schemes "sprout verus"
+sh tools/fetch_submodules.sh
+src/experiments/setup.py --install-deps --schemes "sprout verus"
 git add .
 
 # Make sure we catch the sysctl binary if it is in /sbin
 export PATH=$PATH:/sbin
 
-test/setup.py --schemes "sprout verus"
+sudo sysctl -w net.ipv4.ip_forward=1
+
+src/experiments/setup.py --setup --schemes "sprout verus"
+src/experiments/setup.py --schemes "sprout verus"
 cd ~/ABC-1

@@ -16,7 +16,7 @@ cd mahimahi && ./autogen.sh && ./configure && make && sudo make install
 
 # Make sure we have congestion control Pantheon
 cd ~
-if [ ! -d "./pantheon"]; then
+if [ ! -d "pantheon" ]; then
   git clone https://github.com/StanfordSNR/pantheon.git
 fi
 cd ~/ABC-1

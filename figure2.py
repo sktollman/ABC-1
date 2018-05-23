@@ -36,20 +36,20 @@ CUBIC = Protocol(
 
 SPROUT = Protocol(
     name='sprout',
-    pre_commands=["echo 'todo'"],
-    post_commands=["echo 'todo'"],
+    pre_commands=["python ~/pantheon/src/wrappers/sprout.py receiver 12345 &"],
+    post_commands=["sleep 140; pkill -f sproutbt2"],
     uplink_queue='droptail',
-    uplink_queue_args='packets=250,qdelay_ref=50,beta=75',
-    commands=''
+    uplink_queue_args='packets=100',
+    commands='python ~/pantheon/src/wrappers/sprout.py sender 100.64.0.1 12345 &'
 )
 
 VERUS = Protocol(
     name='verus',
-    pre_commands=["echo 'todo'"],
-    post_commands=["echo 'todo'"],
+    pre_commands=["python ~/pantheon/src/wrappers/verus.py sender 12312 &; sleep 10"],
+    post_commands=["sleep 75; pkill -f verus_client; pkill -f verus_server"],
     uplink_queue='droptail',
-    uplink_queue_args='packets=250,qdelay_ref=50,beta=75',
-    commands=''
+    uplink_queue_args='packets=100',
+    commands='python ~/pantheon/src/wrappers/verus.py receiver 100.64.0.1 12312 &'
 )
 
 # TODO: fix vegas!
@@ -77,7 +77,7 @@ BBR = CUBIC._replace(
 )
 
 PANTHEON_PROTOS = [SPROUT, VERUS]
-PROTOS = [BBR, VEGAS, ABC, CUBIC, CUBIC_CODEL, CUBIC_PIE]
+PROTOS = [BBR, VEGAS, ABC, CUBIC, CUBIC_CODEL, CUBIC_PIE, SPROUT, VERUS]
 stats = dict()
 
 def run_exp(proto, skip=False, pantheon=False):
@@ -101,12 +101,14 @@ def run_exp(proto, skip=False, pantheon=False):
                 uplink=UPLINK, downlink=DOWNLINK, commands=proto.commands)
         results = 'mm-throughput-graph {delay} {log_file} > /dev/null 2> {results_file}'.format(
             delay=DELAY, log_file=uplink_log_file, results_file=results_file)
-
-        commands = list(proto.pre_commands)
+        
+        commands = list(proto.pre_commands[0].split(';'))
         commands.append(exp)
-        commands.extend(proto.post_commands)
+        commands.extend(proto.post_commands[0].split(';'))
         commands.append(results)
+        print(commands)
         for c in commands:
+            print(c)
             call(c, shell=True)
 
     with open(results_file) as f:
@@ -131,6 +133,9 @@ if __name__ == '__main__':
         help='skip the specified protocols', nargs='+')
     parser.add_argument('--filename', default=None,
         help='save the results to a csv with this name', type=str)
+    parser.add_argument('--scheme', default=None, type=str,
+        help='only run this scheme end to end')
+
     args = parser.parse_args()
 
     not_both_params = not args.skip or not args.skip_all_except
@@ -141,12 +146,14 @@ if __name__ == '__main__':
         run_protos = filter(lambda p: p.name not in args.skip, run_protos)
     elif args.skip_all_except:
         run_protos = filter(lambda p: p.name in args.skip_all_except, run_protos)
-
+    
     # these two directories are required
     if not os.path.exists('logs'): os.makedirs('logs')
     if not os.path.exists('results'): os.makedirs('results')
 
     for p in PROTOS:
+        if p.name != args.scheme:
+            continue
         run_exp(p, not p in run_protos, p in PANTHEON_PROTOS)
 
     if args.filename:
