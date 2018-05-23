@@ -3,9 +3,10 @@
 from subprocess import call
 from collections import namedtuple
 
+TRACE_DIR = '~/ABC-1/mahimahi/traces/'
 UPLINK_EXT = 'Verizon-LTE-short.up'
-UPLINK = '~/ABC-1/mahimahi/traces/{}'.format(UPLINK_EXT)
-DOWNLINK = '~/ABC-1/bw48.mahi'
+DOWNLINK_EXT = 'Verizon-LTE-short.down'
+STATIC_BW = '~/ABC-1/bw48.mahi'
 DELAY = 50
 
 Protocol = namedtuple('Protocol', ['name', 'pre_commands', 'post_commands',
@@ -17,8 +18,7 @@ ABC = Protocol(
     pre_commands=['python server.py &'],
     post_commands=['pkill -f server.py'],
     uplink_queue='cellular',
-    # TODO: make packets consistent between protocols...
-    uplink_queue_args='packets=250,qdelay_ref=50,beta=75',
+    uplink_queue_args='packets=100,qdelay_ref=50,beta=75',
     commands='python client.py'
 )
 CUBIC = Protocol(
@@ -29,8 +29,6 @@ CUBIC = Protocol(
     uplink_queue_args='packets=100',
     commands='./start-tcp.sh cubic'
 )
-# TODO: fix vegas!
-# Attempt to set 'vegas' congestion control failed: No such file or directory
 VEGAS = CUBIC._replace(
     name='vegas',
     commands='./start-tcp.sh vegas'
@@ -45,9 +43,6 @@ CUBIC_PIE = CUBIC._replace(
     uplink_queue='pie',
     uplink_queue_args='packets=100,qdelay_ref=50,max_burst=100'
 )
-# TODO: fix BBR!
-# qdisc fq 8001: root refcnt 2 limit 10000p flow_limit 100p buckets 1024 quantum 3000 initial_quantum 15000
-# Attempt to set 'bbr' congestion control failed: No such file or directory
 BBR = CUBIC._replace(
     name='bbr',
     commands='./start-tcp.sh bbr'
@@ -56,9 +51,10 @@ BBR = CUBIC._replace(
 PROTOS = [BBR, VEGAS, ABC, CUBIC, CUBIC_CODEL, CUBIC_PIE]
 stats = dict()
 
-def run_exp(proto, skip=False):
-    uplink_log_file = 'logs/{}-{}.log'.format(UPLINK_EXT, proto.name)
-    results_file = 'results/{}-{}.txt'.format(UPLINK_EXT, proto.name)
+def run_exp(proto, uplink_ext, downlink, skip=False):
+    uplink = '{}{}'.format(TRACE_DIR, uplink_ext)
+    uplink_log_file = 'logs/{}-{}.log'.format(uplink_ext, proto.name)
+    results_file = 'results/{}-{}.txt'.format(uplink_ext, proto.name)
 
     if not skip:
         print('Running {} experiment...'.format(proto.name))
@@ -67,9 +63,9 @@ def run_exp(proto, skip=False):
             --uplink-queue={uplink_queue} --uplink-queue-args=\"{uplink_queue_args}\" \
             {uplink} {downlink} {commands}'.format(delay=DELAY, uplink_log=uplink_log_file,
                 uplink_queue=proto.uplink_queue, uplink_queue_args=proto.uplink_queue_args,
-                uplink=UPLINK, downlink=DOWNLINK, commands=proto.commands)
-        results = 'mm-throughput-graph {delay} {log_file} > /dev/null 2> {results_file}'.format(
-            delay=DELAY, log_file=uplink_log_file, results_file=results_file)
+                uplink=uplink, downlink=downlink, commands=proto.commands)
+        results = 'mm-throughput-graph 500 {log_file} > /dev/null 2> {results_file}'.format(
+            log_file=uplink_log_file, results_file=results_file)
 
         commands = list(proto.pre_commands)
         commands.append(exp)
@@ -78,33 +74,36 @@ def run_exp(proto, skip=False):
         for c in commands:
             call(c, shell=True)
 
-    with open(results_file) as f:
-        lines = f.readlines()
-        avg_capacity = float(lines[0].split(' ')[2])
-        avg_throughput = float(lines[1].split(' ')[2])
-        queueing_delay = float(lines[2].split(' ')[5])
-        signal_delay = float(lines[3].split(' ')[4])
+    if os.path.isfile(results_file):
+        with open(results_file) as f:
+            lines = f.readlines()
+            avg_capacity = float(lines[0].split(' ')[2])
+            avg_throughput = float(lines[1].split(' ')[2])
+            queueing_delay = float(lines[2].split(' ')[5])
+            signal_delay = float(lines[3].split(' ')[4])
 
-        utilization = avg_throughput / avg_capacity
+            utilization = avg_throughput / avg_capacity
 
-        stats[proto.name] = Stats(utilization, signal_delay)
+            stats[proto.name] = Stats(utilization, signal_delay)
 
-        print('{} results: utilization={}%, delay={}ms'.format(proto.name,
-            round(100 * utilization, 2), signal_delay))
+            print('{} results: utilization={}%, delay={}ms'.format(proto.name,
+                round(100 * utilization, 2), signal_delay))
 
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('--skip-all-except', default=None,
+    skip = parser.add_mutually_exclusive_group(required=False)
+    skip.add_argument('--skip-all-except', default=None,
         help='only perform a fresh run for the specified protocols', nargs='*')
-    parser.add_argument('--skip', default=None,
+    skip.add_argument('--skip', default=None,
         help='skip the specified protocols', nargs='+')
     parser.add_argument('--filename', default=None,
         help='save the results to a csv with this name', type=str)
+    links = parser.add_mutually_exclusive_group(required=True)
+    links.add_argument('--uplink', action='store_true', default=False)
+    links.add_argument('--downlink', action='store_true', default=False)
+    links.add_argument('--bothlinks', action='store_true', default=False)
     args = parser.parse_args()
-
-    not_both_params = not args.skip or not args.skip_all_except
-    assert not_both_params, '--skip-all-except and --skip cannot be used concurrently'
 
     run_protos = list(PROTOS)
     if args.skip:
@@ -117,8 +116,10 @@ if __name__ == '__main__':
     if not os.path.exists('logs'): os.makedirs('logs')
     if not os.path.exists('results'): os.makedirs('results')
 
+    uplink_ext = UPLINK_EXT if args.uplink or args.bothlinks else DOWNLINK_EXT
+    downlink = STATIC_BW if not args.bothlinks else '{}{}'.format(TRACE_DIR, DOWNLINK_EXT)
     for p in PROTOS:
-        run_exp(p, not p in run_protos)
+        run_exp(p, uplink_ext, downlink, not p in run_protos)
 
     if args.filename:
         if not args.filename.endswith('.csv'):
