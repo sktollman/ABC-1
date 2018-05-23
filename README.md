@@ -20,7 +20,7 @@ Logic for ABC is in the file - mahimahi/src/packet/cellular_packet_queue.cc
 We need `cubic`, `vegas`, and `bbr`.
 If you are running on a Google Cloud Compute instance, you can run:
 ```
-$ sh install_kernal_cc.sh
+$ sh install_kernel_cc.sh
 ```
 ##### If you are not running on GCC
 
@@ -41,8 +41,6 @@ To load modules, run `modprobe`. (eg: `sudo modprobe -a tcp_vegas`). You should 
 # Reproduction
 
 ## Figure 2
-
-### Figure 2a
 
 `figure2.py` contains the code to reproduce Figure 2a or b. This runs traces against each protocol and optionally saves the utilization and delay results to a csv file. The `--skip` and `--skip-all-except` parameters allow the developer to reuse previous results for a given protocol to save time. For Figure 2a, use the `--uplink` parameter. For Figure 2b, use the `--downlink` parameter. To run an experiment that uses a varying downlink, use the `--bothlinks` parameter.
 
