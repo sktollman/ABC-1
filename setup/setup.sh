@@ -21,5 +21,8 @@ if [ ! -d "pantheon" ]; then
 fi
 cd ~/ABC-1
 
+# Setup congestion control schmees
+sh install_kernel_cc.sh
+
 # Setup Pantheon
 sh setup/setup_pantheon.sh 

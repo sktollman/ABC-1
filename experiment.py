@@ -111,27 +111,29 @@ if __name__ == '__main__':
         help='list of protocols to run from scratch; runs all if empty')
     parser.add_argument('--figure', default="2a", type=str,
         help='The figure to run an experiment for: 1, 2a, 2b, 2c, 4')
-    parser.add_argument('--csv_out', default=None, type=str,
+    parser.add_argument('--csv-out', default=None, type=str,
         help='save results to CSV file with this name')
 
     skip = parser.add_mutually_exclusive_group(required=False)
-    skip.add_argument('--run_full', default=None,
+    skip.add_argument('--run-full', default=None,
             help='perform a full run for the specified protocols',
             nargs='+')
-    skip.add_argument('--reuse_results', default=None,
+    skip.add_argument('--reuse-results', default=None,
             help='reuse existing results for the specified protocols', nargs='+')
     
     args = parser.parse_args()
     
     if not os.path.exists('logs'): os.makedirs('logs')
     if not os.path.exists('results'): os.makedirs('results')
-
+    
+    # What schemes to run?
     if args.schemes:
         schemes = args.schemes
     else:
         schemes = ALL_SCHEMES
     
-    run_full = []
+    # What schemes to run in full and which to reuse results from?
+    run_full = schemes
     if args.reuse_results:
         run_full = [s for s in schemes if s not in args.reuse_results]
     elif args.run_full:
@@ -154,4 +156,5 @@ if __name__ == '__main__':
         
         with open(args.csv_out, 'w') as f:
             for proto, s in stats.items():
-                f.write('{}, {}, {}, {}, {}\n'.format(proto, s.util, s.delay))
+                f.write('{}, {}, {}, {}, {}\n'.format(proto, 
+                    s.util, s.delay, s.throughput, s.power))
