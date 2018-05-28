@@ -25,7 +25,10 @@ Stats = namedtuple('Stats', ['util', 'delay', 'throughput', 'power'])
 stats = dict()
 
 def print_fig2_results(cc_proto):
-    """ Prints results for a figure 2 experiment. 
+    """ Prints results for a figure 2 experiment.
+
+    Additionally, saves statistics to the "stats" global
+    variable.
     """
 
     proto_name = cc_proto.config['name']
@@ -44,7 +47,7 @@ def print_fig2_results(cc_proto):
             stats[proto_name] = Stats(utilization, signal_delay, avg_throughput, power_score)
 
             print("\n  ~~ Results for protocol: %s ~~" % proto_name)
-            print("\tutilization: %s" % str(round(100 * utilization, 2)))
+            print("\tutilization: %s%%" % str(round(100 * utilization, 2)))
             print("\tthroughput: %s" % str(avg_throughput))
             print("\tdelay: %s" % str(signal_delay))
             print("\tpower score: %s\n" % str(power_score))
@@ -53,8 +56,12 @@ def print_fig2_results(cc_proto):
         print("No results found for proto %s at path: %s" 
                 % (proto_name, cc_proto.results_file_path))
 
-def run_fig2(schemes, fig):
+def run_fig2(schemes, fig, run_full):
     """ Runs Figure 2 experiments for the given schemes. 
+
+    Runs full experiments for everything in run_full,
+    assuming that results files already exist for protocols present
+    in schemes but not in run_full.
     """
     delay = 20
     
@@ -79,27 +86,40 @@ def run_fig2(schemes, fig):
     # Run each scheme experiment
     
     for scheme in schemes:
-        print(" ---- Running Figure 2a exp for protocol: %s ---- " % scheme)
+        print(" ---- Running Figure 2a exp for protocol: %s ---- \n" % scheme)
         protocol = get_protocol(scheme, uplink_ext, downlink_ext)
         cmds = protocol.get_figure2_cmds(delay, uplink_trace, downlink_trace)
         
-        for c in cmds:
-            print("$ %s" % c)
-            call(c, shell=True)
+        
+        if scheme in run_full:
+            for c in cmds:
+                print("$ %s" % ' '.join(c.split(' ')))
+                call(c, shell=True)
+        else:
+            print(" Experiment skipped ")
 
         print_fig2_results(protocol)
         print(" ---- Done ---- \n")
 
+ALL_SCHEMES = ['abc', 'cubic', 'sprout', 'verus', 'vegas', \
+        'cubiccodel', 'cubicpie', 'bbr']
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--schemes', default=None, type=str,
-        help='comma-separated list of protocols to run from scratch; runs all if empty')
+    parser.add_argument('--schemes', default=None, nargs='+',
+        help='list of protocols to run from scratch; runs all if empty')
     parser.add_argument('--figure', default="2a", type=str,
         help='The figure to run an experiment for: 1, 2a, 2b, 2c, 4')
     parser.add_argument('--csv_out', default=None, type=str,
         help='save results to CSV file with this name')
+
+    skip = parser.add_mutually_exclusive_group(required=False)
+    skip.add_argument('--run_full', default=None,
+            help='perform a full run for the specified protocols',
+            nargs='+')
+    skip.add_argument('--reuse_results', default=None,
+            help='reuse existing results for the specified protocols', nargs='+')
     
     args = parser.parse_args()
     
@@ -107,12 +127,20 @@ if __name__ == '__main__':
     if not os.path.exists('results'): os.makedirs('results')
 
     if args.schemes:
-        schemes = args.schemes.split(',')
+        schemes = args.schemes
+    else:
+        schemes = ALL_SCHEMES
+    
+    run_full = []
+    if args.reuse_results:
+        run_full = [s for s in schemes if s not in args.reuse_results]
+    elif args.run_full:
+        run_full = [s for s in schemes if s not in args.run_full]
     
     if args.figure == '1':
         raise NotImplementedError
     elif args.figure == '2a' or args.figure == '2b' or args.figure == '2c':
-        run_fig2(schemes, args.figure)
+        run_fig2(schemes, args.figure, run_full)
     elif args.figure == '4':
         raise NotImplementedError
     else:
