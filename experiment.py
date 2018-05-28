@@ -83,6 +83,12 @@ def run_fig2_exp(schemes, exp, run_full):
         downlink_ext = 'Verizon-LTE-short.down'
         uplink_trace = os.path.join(TRACE_DIR, uplink_ext)
         downlink_trace = os.path.join(TRACE_DIR, downlink_ext)
+    elif exp == 'pa1':
+        delay = 20
+        uplink_ext = 'Verizon-LTE-short.down'
+        downlink_ext = 'Verizon-LTE-short.up'
+        uplink_trace = os.path.join(TRACE_DIR, uplink_ext)
+        downlink_trace = os.path.join(TRACE_DIR, downlink_ext)
     else:
         raise ValueError("Unknown experiment: %s" % exp)
  
@@ -149,7 +155,7 @@ if __name__ == '__main__':
             run_full = [s for s in schemes if s not in args.run_full]
     
     if args.experiment == "figure2a" or args.experiment == "figure2b" \
-            or args.experiment == "bothlinks":
+            or args.experiment == "bothlinks" or args.experiment == "pa1":
         run_fig2_exp(schemes, args.experiment, run_full)
     else:
         raise NotImplementedError("Unknown experiment: %s" % args.experiment)

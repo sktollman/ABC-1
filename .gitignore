@@ -1,6 +1,8 @@
 # Project-specific
 /logs
 /results
+*.csv
+*.svg
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

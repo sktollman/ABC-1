@@ -52,10 +52,10 @@ Lastly, the command-line parameter `--csv-out` allows you to specify a filename 
 
 ### Generating Figure Plots
 
-`figure2_plot.py` takes a csv results file from `experiments.py` and creates a matplotlib graph with the same format as the figure from the original paper. These two scripts are separate because I [Sarah] could not get matplotlib running on the virtual machine I am using for mahimahi, so I am creating the csv on the machine and the graph on my local machine.
+`figure2_plot.py` takes a csv results file from `experiments.py` and creates a matplotlib graph with the same format as the figure from the original paper.
 
 Example:
 ```
-$ python figure2.py --uplink --filename results
-$ python figure2_plot.py --data_filename results.csv --plot-filename plot
+$ python figure2.py --experiment figure2a --reuse-results all --csv-out results
+$ python figure2_plot.py --data-filename results.csv --plot-filename plot
 ```

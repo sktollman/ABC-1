@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+import matplotlib
+matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 from matplotlib import rc
 from matplotlib.ticker import ScalarFormatter, NullFormatter
@@ -60,7 +63,10 @@ if __name__ == '__main__':
         for fn in args.data_filename:
             with open(fn) as f:
                 for l in f:
-                    proto, util, delay = l.split(', ')
+                    results = l.split(', ')
+                    proto = results[0]
+                    util = results[1]
+                    delay = results[2]
                     temp_stats[proto].append(Stats(float(util), float(delay)))
         for proto, stats_list in temp_stats.items():
             avg_util = reduce(lambda x, y: x + y,
