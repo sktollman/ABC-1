@@ -38,9 +38,6 @@ def get_protocol(scheme, uplink_ext, downlink_ext):
         config_file_path = 'protocols/config/verus.json'
 
     elif scheme == "vegas":
-
-        # TODO: fix vegas!
-        # Attempt to set 'vegas' congestion control failed: No such file or directory
         config_file_path = 'protocols/config/cubic.json'
         extra_config['name'] = 'vegas'
         extra_config['mahimahi_command'] = './start-tcp.sh vegas'
