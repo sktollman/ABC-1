@@ -24,5 +24,8 @@ cd ~/ABC-1
 # Setup congestion control schmees
 sh install_kernel_cc.sh
 
+# Make start-tcp executable
+chmod +x start-tcp.sh
+
 # Setup Pantheon
 sh setup/setup_pantheon.sh 

@@ -63,7 +63,7 @@ def run_fig2(schemes, fig, run_full):
     assuming that results files already exist for protocols present
     in schemes but not in run_full.
     """
-    delay = 20
+    delay = 50
     
     # Set up uplink/downlink trace combination
     
