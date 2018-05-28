@@ -42,11 +42,11 @@ To load modules, run `modprobe`. (eg: `sudo modprobe -a tcp_vegas`). You should 
 
 ## Figure 2
 
-`experiments.py` contains the code to reproduce Figure 2 (as well as other figures). This runs traces against each protocol and optionally saves the utilization and delay results to a csv file. The `--schemes` command-line parameter takes in a comma-separated list of protocols to run.  If the option is not given, results for all protocols are generated. The `--figure` parameter takes a string in `1, 2a, 2b, 2c, 4` according to which figure we are running experiments for.  Currently, we only support `2a, 2b, 2c`.
+`experiments.py` contains the code to reproduce Figure 2 (as well as other figures). This runs traces against each protocol and optionally saves the utilization and delay results to a csv file. The `--schemes` command-line parameter takes in a comma-separated list of protocols to run.  If the option is not given, results for all protocols are generated. The `--experiment` parameter takes a string in `figure2a, figure2b, bothlinks` according to which experiment we are running.
 
-For example, to generate ABC and Verus results for Figure 2a, run `python experiments.py --figure 2a --schemes abc verus`.
+For example, to generate ABC and Verus results for Figure 2a, run `python experiment.py --experiment figure2a --schemes abc verus`.
 
-The `--reuse-results` and `--run-full` parameters allow the developer to specify exactly which experiments to re-run, and which to only display results from given that a results file exists.  For example, `python experiment.py --figure 2a --schemes abc sprout --reuse-results abc` will return Figure 2a results for ABC and Sprout, but will only fully re-run the experiment for Sprout, because ABC is skipped.  Not specifying any of these commands will spur a fresh run of all the protocols given in `--schemes`.
+The `--reuse-results` and `--run-full` parameters allow the developer to specify exactly which experiments to re-run, and which to only display results from given that a results file exists.  For example, `python experiment.py --experiment figure2a --schemes abc sprout --reuse-results abc` will return Figure 2a results for ABC and Sprout, but will only fully re-run the experiment for Sprout, because ABC is skipped.  Not specifying any of these commands will spur a fresh run of all the protocols given in `--schemes`.
 
 Lastly, the command-line parameter `--csv-out` allows you to specify a filename to which experiment results will be printed in csv format.  This file is consumed by the plotting scripts described in the next section.
 

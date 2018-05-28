@@ -25,7 +25,7 @@ Stats = namedtuple('Stats', ['util', 'delay', 'throughput', 'power'])
 stats = dict()
 
 def print_fig2_results(cc_proto):
-    """ Prints results for a figure 2 experiment.
+    """ Prints results for a figure 2 - type experiment.
 
     Additionally, saves statistics to the "stats" global
     variable.
@@ -56,8 +56,9 @@ def print_fig2_results(cc_proto):
         print("No results found for proto %s at path: %s" 
                 % (proto_name, cc_proto.results_file_path))
 
-def run_fig2(schemes, fig, run_full):
-    """ Runs Figure 2 experiments for the given schemes. 
+def run_fig2_exp(schemes, exp, run_full):
+    """ Runs experiments for the given schemes, in
+    the style of figure 2.
 
     Runs full experiments for everything in run_full,
     assuming that results files already exist for protocols present
@@ -67,26 +68,28 @@ def run_fig2(schemes, fig, run_full):
     
     # Set up uplink/downlink trace combination
     
-    if fig == '2a':
+    if exp == 'figure2a':
         uplink_ext = 'Verizon-LTE-short.up'
         downlink_ext = STATIC_BW
         uplink_trace = os.path.join(TRACE_DIR, uplink_ext)
         downlink_trace = os.path.join(BW_TRACE_DIR, downlink_ext)
-    elif fig == '2b':
+    elif exp == 'figure2b':
         uplink_ext = STATIC_BW
         downlink_ext = 'Verizon-LTE-short.down'
         uplink_trace = os.path.join(BW_TRACE_DIR, uplink_ext)
         downlink_trace = os.path.join(TRACE_DIR, downlink_ext)
-    elif fig == '2c':
-        # TODO: need to figure this one out
-        raise NotImplementedError
+    elif exp == 'bothlinks':
+        uplink_ext = 'Verizon-LTE-short.up'
+        downlink_ext = 'Verizon-LTE-short.down'
+        uplink_trace = os.path.join(TRACE_DIR, uplink_ext)
+        downlink_trace = os.path.join(TRACE_DIR, downlink_ext)
     else:
-        raise ValueError("Unknown figure: %s" % fig)
+        raise ValueError("Unknown experiment: %s" % exp)
  
     # Run each scheme experiment
     
     for scheme in schemes:
-        print(" ---- Running Figure 2a exp for protocol: %s ---- \n" % scheme)
+        print(" ---- Running Experiment %s for protocol: %s ---- \n" % (exp, scheme))
         protocol = get_protocol(scheme, uplink_ext, downlink_ext)
         cmds = protocol.get_figure2_cmds(delay, uplink_trace, downlink_trace)
         
@@ -109,8 +112,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--schemes', default=None, nargs='+',
         help='list of protocols to run from scratch; runs all if empty')
-    parser.add_argument('--figure', default="2a", type=str,
-        help='The figure to run an experiment for: 1, 2a, 2b, 2c, 4')
+    parser.add_argument('--experiment', default="figure2a", type=str,
+        help='The experiment to run: e.g. figure2a, figure2b, bothlinks')
     parser.add_argument('--csv-out', default=None, type=str,
         help='save results to CSV file with this name')
 
@@ -145,14 +148,11 @@ if __name__ == '__main__':
         else:
             run_full = [s for s in schemes if s not in args.run_full]
     
-    if args.figure == '1':
-        raise NotImplementedError
-    elif args.figure == '2a' or args.figure == '2b' or args.figure == '2c':
-        run_fig2(schemes, args.figure, run_full)
-    elif args.figure == '4':
-        raise NotImplementedError
+    if args.experiment == "figure2a" or args.experiment == "figure2b" \
+            or args.experiment == "bothlinks":
+        run_fig2_exp(schemes, args.experiment, run_full)
     else:
-        raise ValueError("Unknown figure: %s" % args.figure)
+        raise NotImplementedError("Unknown experiment: %s" % args.experiment)
     
     # Output CSV file with results, if filename passed in arguments.
     if args.csv_out:
