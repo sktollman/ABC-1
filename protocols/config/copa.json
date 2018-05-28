@@ -1,0 +1,7 @@
+{ "name": "copa",
+  "prep_commands": ["python ~/pantheon/src/wrappers/copa.py receiver 12345 &"],
+  "mahimahi_command": "python ~/pantheon/src/wrappers/copa.py sender 100.64.0.1 12345 &",
+  "cleanup_commands": ["sleep 140", "pkill -f receiver &> /dev/null"],
+  "uplink_queue": "droptail",
+  "uplink_queue_args": "packets=1000"
+}

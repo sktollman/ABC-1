@@ -59,6 +59,9 @@ def get_protocol(scheme, uplink_ext, downlink_ext):
         extra_config['name'] = 'bbr'
         extra_config['mahimahi_command'] = './start-tcp.sh bbr'
 
+    elif scheme == "copa":
+        config_file_path = 'protocols/config/copa.json'
+
     else:
         raise ValueError("Unknown scheme: %s" % scheme)
 
