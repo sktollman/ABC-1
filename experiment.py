@@ -135,9 +135,15 @@ if __name__ == '__main__':
     # What schemes to run in full and which to reuse results from?
     run_full = schemes
     if args.reuse_results:
-        run_full = [s for s in schemes if s not in args.reuse_results]
+        if args.reuse_results == 'all':
+            run_full = []
+        else:
+            run_full = [s for s in schemes if s not in args.reuse_results]
     elif args.run_full:
-        run_full = [s for s in schemes if s not in args.run_full]
+        if args.run_full == 'all':
+            run_full = schemes
+        else:
+            run_full = [s for s in schemes if s not in args.run_full]
     
     if args.figure == '1':
         raise NotImplementedError
