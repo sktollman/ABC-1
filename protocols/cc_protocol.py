@@ -67,7 +67,7 @@ class CCProtocol:
                                                    results_file=self.results_file_path)
 
         cleanup_commands = self.config['cleanup_commands']
-        return prep_commands + [mahimahi_cmd, results_cmd] + cleanup_commands
+        return prep_commands + [mahimahi_cmd] + cleanup_commands + [results_cmd]
 
     def show(self):
         """Pretty print thyself

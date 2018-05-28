@@ -43,11 +43,11 @@ def print_fig2_results(cc_proto):
 
             stats[proto_name] = Stats(utilization, signal_delay, avg_throughput, power_score)
 
-            print(" -- Results for protocol: %s" % proto_name)
+            print("\n  ~~ Results for protocol: %s ~~" % proto_name)
             print("\tutilization: %s" % str(round(100 * utilization, 2)))
             print("\tthroughput: %s" % str(avg_throughput))
             print("\tdelay: %s" % str(signal_delay))
-            print("\tpower score: %s" % str(power_score))
+            print("\tpower score: %s\n" % str(power_score))
 
     else:
         print("No results found for proto %s at path: %s" 
