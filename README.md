@@ -1,27 +1,27 @@
-# ABC-AQM
+# Into
 
-Installing Mahimahi
-```
-$ cd mahimahi && ./autogen.sh && ./configure && make && sudo make install
-$ sudo sysctl -w net.ipv4.ip_forward=1
-```
-(have to enable Linux's IP forwarding for mahimahi to work)
-
-For any issues with mahimahi refer to - http://mahimahi.mit.edu
-
-run-exp.sh contains example of how to run various schemes.
+This repository contains logic for reproducing results from the
+ABC congestion control research paper by Goyal et al.
 
 Logic for ABC is in the file - mahimahi/src/packet/cellular_packet_queue.cc
 
 -----
 
+# Setup
+
+1. Clone the repo: `https://github.com/sktollman/ABC-1.git`.
+2. Create a Python 2 virtual environment within `ABC-1` and activate it.
+3.  Run the setup script `sh setup/setup.sh`
+
+The setup script will install dependencies (e.g. pip packages,  debian packages, the Stanford Pantheon for congestion control), install mahimahi, and prepare your Kernel for running experiments.
+
 # Installing Congestion Control Modules
 
 We need `cubic`, `vegas`, and `bbr`.
-If you are running on a Google Cloud Compute instance, you can run:
-```
-$ sh install_kernel_cc.sh
-```
+If you are running on a Google Cloud Compute instance, this part is already
+taken care for you if you followed the steps in the previous section.
+
+
 ##### If you are not running on GCC
 
 To see which modules are loaded in your kernel, run:
@@ -42,9 +42,17 @@ To load modules, run `modprobe`. (eg: `sudo modprobe -a tcp_vegas`). You should 
 
 ## Figure 2
 
-`figure2.py` contains the code to reproduce Figure 2a or b. This runs traces against each protocol and optionally saves the utilization and delay results to a csv file. The `--skip` and `--skip-all-except` parameters allow the developer to reuse previous results for a given protocol to save time. For Figure 2a, use the `--uplink` parameter. For Figure 2b, use the `--downlink` parameter. To run an experiment that uses a varying downlink, use the `--bothlinks` parameter.
+`experiments.py` contains the code to reproduce Figure 2 (as well as other figures). This runs traces against each protocol and optionally saves the utilization and delay results to a csv file. The `--schemes` command-line parameter takes in a comma-separated list of protocols to run.  If the option is not given, results for all protocols are generated. The `--figure` parameter takes a string in `1, 2a, 2b, 2c, 4` according to which figure we are running experiments for.  Currently, we only support `2a, 2b, 2c`.
 
-`figure2_plot.py` takes a results file from `figure2.py` and creates a matplotlib graph with the same format as the figure from the original paper. These two scripts are separate because I [Sarah] could not get matplotlib running on the virtual machine I am using for mahimahi, so I am creating the csv on the machine and the graph on my local machine.
+For example, to generate ABC and Verus results for Figure 2a, run `python experiments.py --figure 2a --schemes abc verus`.
+
+The `--reuse-results` and `--run-full` parameters allow the developer to specify exactly which experiments to re-run, and which to only display results from given that a results file exists.  For example, `python experiment.py --figure 2a --schemes abc sprout --reuse-results abc` will return Figure 2a results for ABC and Sprout, but will only fully re-run the experiment for Sprout, because ABC is skipped.  Not specifying any of these commands will spur a fresh run of all the protocols given in `--schemes`.
+
+Lastly, the command-line parameter `--csv-out` allows you to specify a filename to which experiment results will be printed in csv format.  This file is consumed by the plotting scripts described in the next section.
+
+### Generating Figure Plots
+
+`figure2_plot.py` takes a csv results file from `experiments.py` and creates a matplotlib graph with the same format as the figure from the original paper. These two scripts are separate because I [Sarah] could not get matplotlib running on the virtual machine I am using for mahimahi, so I am creating the csv on the machine and the graph on my local machine.
 
 Example:
 ```
