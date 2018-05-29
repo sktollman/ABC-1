@@ -1,0 +1,8 @@
+{
+  "name": "abc",
+  "prep_commands": ["python server.py &"],
+  "mahimahi_command": "python client.py",
+  "cleanup_commands": ["pkill -f server.py"],
+  "uplink_queue": "cellular",
+  "uplink_queue_args": "packets=100,qdelay_ref=50,beta=75"
+}

@@ -1,5 +1,8 @@
 #!/usr/bin/python
 
+import matplotlib
+matplotlib.use('Agg')
+
 import matplotlib.pyplot as plt
 from matplotlib import rc
 from matplotlib.ticker import ScalarFormatter, NullFormatter
