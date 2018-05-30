@@ -11,7 +11,7 @@ import pprint
 class CCProtocol:
 
     fig_2_base_cmd_fmt = "mm-delay {delay} \
-            mm-link --uplink-log={uplink_log} \
+            mm-link --once --uplink-log={uplink_log} \
             {queue_args} \
             {uplink} {downlink} \
             {mahimahi_command}"
