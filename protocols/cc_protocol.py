@@ -52,7 +52,10 @@ class CCProtocol:
         """ Returns list of commands to run to generate Figure 2 results.
         """
         
-        queue_args = self.mahimahi_queue_args_fmt.format(uplink_queue=self.config['uplink_queue'],
+        if self.config['uplink_queue'] == '':
+            queue_args = ''
+        else:
+            queue_args = self.mahimahi_queue_args_fmt.format(uplink_queue=self.config['uplink_queue'],
                                         uplink_queue_args=self.config['uplink_queue_args'])
 
         prep_commands = self.config['prep_commands']

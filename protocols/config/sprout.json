@@ -2,6 +2,6 @@
   "prep_commands": ["python ~/pantheon/src/wrappers/sprout.py receiver 12345 &"],
   "mahimahi_command": "python ~/pantheon/src/wrappers/sprout.py sender 100.64.0.1 12345",
   "cleanup_commands": ["pkill -f sproutbt2 &> /dev/null"],
-  "uplink_queue": "droptail",
-  "uplink_queue_args": "packets=1000"
+  "uplink_queue": "",
+  "uplink_queue_args": ""
 }
