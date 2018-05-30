@@ -1,0 +1,11 @@
+--- verus-old.py	2018-05-30 03:07:51.147472655 +0000
++++ verus.py	2018-05-30 03:08:01.347369528 +0000
+@@ -28,7 +28,7 @@
+         return
+ 
+     if args.option == 'sender':
+-        cmd = [send_src, '-name', utils.tmp_dir, '-p', args.port, '-t', '75']
++        cmd = [send_src, '-name', utils.tmp_dir, '-p', args.port, '-t', '1000']
+         check_call(cmd, cwd=utils.tmp_dir)
+         return
+ 
