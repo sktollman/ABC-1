@@ -12,7 +12,7 @@ pip install -r ~/ABC-1/requirements.txt
 sh setup/install_mahimahi_deps.sh
 
 # Setup mahimahi
-cd mahimahi && ./autogen.sh && ./configure && make && sudo make install
+cd mahimahi && sh autogen.sh && sh configure && make && sudo make install
 
 # Make sure we have congestion control Pantheon
 cd ~
