@@ -17,7 +17,7 @@ class CCProtocol:
             {mahimahi_command}"
 
     fig_2_results_cmd_fmt = "mm-throughput-graph 500 {log_file} > \
-            /dev/null 2> {results_file}"
+            graph.svg 2> {results_file}"
 
     mahimahi_queue_args_fmt = "--uplink-queue={uplink_queue} \
             --uplink-queue-args=\"{uplink_queue_args}\""
