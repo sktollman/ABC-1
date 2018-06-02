@@ -68,7 +68,7 @@ class CCProtocol:
         
         graph_out = '/dev/null'
         if args.print_graph:
-            graph_out = '%s_graph.svg' % self.config['name']
+            graph_out = 'graphs/%s_graph.svg' % self.config['name']
         results_cmd = self.fig_2_results_cmd_fmt.format(log_file=self.uplink_log_file_path,
                                                    results_file=self.results_file_path,
                                                    graph_file=graph_out)
