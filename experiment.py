@@ -139,6 +139,7 @@ if __name__ == '__main__':
     
     if not os.path.exists('logs'): os.makedirs('logs')
     if not os.path.exists('results'): os.makedirs('results')
+    if not os.path.exists('graphs'): os.makedirs('graphs')
     
     # What schemes to run?
     if args.schemes:
