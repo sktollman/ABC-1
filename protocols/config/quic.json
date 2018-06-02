@@ -1,0 +1,7 @@
+{ "name": "quic",
+  "prep_commands": ["python ~/pantheon/src/wrappers/quic.py sender 9090 &", "sleep 5"],
+  "mahimahi_command": "python ~/pantheon/src/wrappers/quic.py receiver $MAHIMAHI_BASE 9090",
+  "cleanup_commands": ["killall quic"],
+  "uplink_queue": "droptail",
+  "uplink_queue_args": "packets=100"
+}

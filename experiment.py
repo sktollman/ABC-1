@@ -21,7 +21,7 @@ STATIC_BW = 'bw48.mahi'
 UPLINK_LOG_FILE_FMT = 'logs/{}-UPLINK_{}-DOWNLINK_{}.log'
 RESULTS_FILE_FMT = 'results/{}-UPLINK_{}-DOWNLINK_{}.txt'
 
-Stats = namedtuple('Stats', ['util', 'delay', 'throughput', 'power'])
+Stats = namedtuple('Stats', ['util', 'delay', 'throughput', 'power', 'queuing_delay'])
 stats = dict()
 
 def print_fig2_results(cc_proto):
@@ -38,25 +38,26 @@ def print_fig2_results(cc_proto):
             lines = f.readlines()
             avg_capacity = float(lines[0].split(' ')[2])
             avg_throughput = float(lines[1].split(' ')[2])
-            queueing_delay = float(lines[2].split(' ')[5])
+            queuing_delay = float(lines[2].split(' ')[5])
             signal_delay = float(lines[3].split(' ')[4])
 
             utilization = avg_throughput / avg_capacity
             power_score = 1000 * avg_throughput / float(signal_delay)
 
-            stats[proto_name] = Stats(utilization, signal_delay, avg_throughput, power_score)
+            stats[proto_name] = Stats(utilization, signal_delay, avg_throughput, power_score, queuing_delay)
 
             print("\n  ~~ Results for protocol: %s ~~" % proto_name)
             print("\tutilization: %s%%" % str(round(100 * utilization, 2)))
             print("\tthroughput: %s" % str(avg_throughput))
-            print("\tdelay: %s" % str(signal_delay))
+            print("\tsignal delay: %s" % str(signal_delay))
+            print("\tqueuing delay: %s" % str(queuing_delay))
             print("\tpower score: %s\n" % str(power_score))
 
     else:
         print("No results found for proto %s at path: %s" 
                 % (proto_name, cc_proto.results_file_path))
 
-def run_fig2_exp(schemes, exp, run_full):
+def run_fig2_exp(schemes, args, run_full):
     """ Runs experiments for the given schemes, in
     the style of figure 2.
 
@@ -65,6 +66,7 @@ def run_fig2_exp(schemes, exp, run_full):
     in schemes but not in run_full.
     """
     delay = 50
+    exp = args.experiment
     
     # Set up uplink/downlink trace combination
     
@@ -97,7 +99,7 @@ def run_fig2_exp(schemes, exp, run_full):
     for scheme in schemes:
         print(" ---- Running Experiment %s for protocol: %s ---- \n" % (exp, scheme))
         protocol = get_protocol(scheme, uplink_ext, downlink_ext)
-        cmds = protocol.get_figure2_cmds(delay, uplink_trace, downlink_trace)
+        cmds = protocol.get_figure2_cmds(delay, uplink_trace, downlink_trace, args)
         
         
         if scheme in run_full:
@@ -123,6 +125,9 @@ if __name__ == '__main__':
     parser.add_argument('--csv-out', default=None, type=str,
         help='save results to CSV file with this name')
 
+    parser.add_argument('--print-graph', action='store_true',
+            help='print throughput graph for each protocol')
+
     skip = parser.add_mutually_exclusive_group(required=False)
     skip.add_argument('--run-full', default=None,
             help='perform a full run for the specified protocols',
@@ -134,6 +139,7 @@ if __name__ == '__main__':
     
     if not os.path.exists('logs'): os.makedirs('logs')
     if not os.path.exists('results'): os.makedirs('results')
+    if not os.path.exists('graphs'): os.makedirs('graphs')
     
     # What schemes to run?
     if args.schemes:
@@ -156,7 +162,7 @@ if __name__ == '__main__':
     
     if args.experiment == "figure2a" or args.experiment == "figure2b" \
             or args.experiment == "bothlinks" or args.experiment == "pa1":
-        run_fig2_exp(schemes, args.experiment, run_full)
+        run_fig2_exp(schemes, args, run_full)
     else:
         raise NotImplementedError("Unknown experiment: %s" % args.experiment)
     
@@ -168,5 +174,5 @@ if __name__ == '__main__':
         
         with open(args.csv_out, 'w') as f:
             for proto, s in stats.items():
-                f.write('{}, {}, {}, {}, {}\n'.format(proto, 
-                    s.util, s.delay, s.throughput, s.power))
+                f.write('{}, {}, {}, {}, {}, {}\n'.format(proto, 
+                    s.util, s.delay, s.throughput, s.power, s.queuing_delay))

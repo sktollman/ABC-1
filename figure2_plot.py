@@ -22,7 +22,11 @@ COLORS = {
     'bbr': 'red',
     'vegas': '#1f90ff',
     'sprout': '#800080',
-    'verus': '#c71786'
+    'verus': '#c71786',
+    'copa': '#ff0dff',
+    'pcc': '#b23c14',
+    'ledbat': '#02b28c',
+    'quic': '#6c8399'
 }
 
 NAMES = {
@@ -33,7 +37,11 @@ NAMES = {
     'bbr': 'BBR',
     'vegas': 'Vegas',
     'sprout': 'Sprout',
-    'verus': 'Verus'
+    'verus': 'Verus',
+    'copa': 'Copa',
+    'pcc': 'PCC',
+    'ledbat': 'LEDBAT',
+    'quic': 'QUIC'
 }
 
 FIGURE2A_ORIGINAL = {
@@ -81,6 +89,8 @@ if __name__ == '__main__':
         help='svg file to save plot', type=str)
     parser.add_argument('-o', '--original-figure', default=None,
         help='original result to plot [2a, 2b]', type=str)
+    parser.add_argument('--use_queuing_delay', action='store_true',
+        help='use queuing delay on the x axis instead of signal delay')
     args = parser.parse_args()
 
     stats = dict()
@@ -90,7 +100,10 @@ if __name__ == '__main__':
         for fn in args.data_filename:
             with open(fn) as f:
                 for l in f:
-                    proto, util, delay, throughput, power = l.split(', ')
+                    proto, util, delay, throughput, power, queuing_delay = l.split(', ')
+                    if args.use_queuing_delay:
+                        delay = queuing_delay
+
                     temp_stats[proto].append(Stats(float(util), float(delay)))
         for proto, stats_list in temp_stats.items():
             avg_util = reduce(lambda x, y: x + y,

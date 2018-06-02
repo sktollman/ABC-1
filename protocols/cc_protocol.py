@@ -11,13 +11,13 @@ import pprint
 class CCProtocol:
 
     fig_2_base_cmd_fmt = "mm-delay {delay} \
-            mm-link --uplink-log={uplink_log} \
+            mm-link --once --uplink-log={uplink_log} \
             {queue_args} \
             {uplink} {downlink} \
-            {mahimahi_command}"
+            -- bash -c '{mahimahi_command}'"
 
     fig_2_results_cmd_fmt = "mm-throughput-graph 500 {log_file} > \
-            /dev/null 2> {results_file}"
+            {graph_file} 2> {results_file}"
 
     mahimahi_queue_args_fmt = "--uplink-queue={uplink_queue} \
             --uplink-queue-args=\"{uplink_queue_args}\""
@@ -48,11 +48,14 @@ class CCProtocol:
         """
         raise NotImplementedError
 
-    def get_figure2_cmds(self, mm_delay, uplink_trace, downlink_trace):
+    def get_figure2_cmds(self, mm_delay, uplink_trace, downlink_trace, args):
         """ Returns list of commands to run to generate Figure 2 results.
         """
         
-        queue_args = self.mahimahi_queue_args_fmt.format(uplink_queue=self.config['uplink_queue'],
+        if self.config['uplink_queue'] == '':
+            queue_args = ''
+        else:
+            queue_args = self.mahimahi_queue_args_fmt.format(uplink_queue=self.config['uplink_queue'],
                                         uplink_queue_args=self.config['uplink_queue_args'])
 
         prep_commands = self.config['prep_commands']
@@ -62,9 +65,13 @@ class CCProtocol:
                                                  uplink=uplink_trace,
                                                  downlink=downlink_trace,
                                                  mahimahi_command=self.config['mahimahi_command'])
-
+        
+        graph_out = '/dev/null'
+        if args.print_graph:
+            graph_out = 'graphs/%s_graph.svg' % self.config['name']
         results_cmd = self.fig_2_results_cmd_fmt.format(log_file=self.uplink_log_file_path,
-                                                   results_file=self.results_file_path)
+                                                   results_file=self.results_file_path,
+                                                   graph_file=graph_out)
 
         cleanup_commands = self.config['cleanup_commands']
         return prep_commands + [mahimahi_cmd] + cleanup_commands + [results_cmd]
