@@ -22,7 +22,11 @@ COLORS = {
     'bbr': 'red',
     'vegas': '#1f90ff',
     'sprout': '#800080',
-    'verus': '#c71786'
+    'verus': '#c71786',
+    'copa': '#ff0dff',
+    'pcc': '#b23c14',
+    'ledbat': '#02b28c',
+    'quic': '#6c8399'
 }
 
 NAMES = {
@@ -33,7 +37,11 @@ NAMES = {
     'bbr': 'BBR',
     'vegas': 'Vegas',
     'sprout': 'Sprout',
-    'verus': 'Verus'
+    'verus': 'Verus',
+    'copa': 'Copa',
+    'pcc': 'PCC',
+    'ledbat': 'LEDBAT',
+    'quic': 'QUIC'
 }
 
 FIGURE2A_ORIGINAL = {

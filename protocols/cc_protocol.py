@@ -14,7 +14,7 @@ class CCProtocol:
             mm-link --once --uplink-log={uplink_log} \
             {queue_args} \
             {uplink} {downlink} \
-            {mahimahi_command}"
+            -- bash -c '{mahimahi_command}'"
 
     fig_2_results_cmd_fmt = "mm-throughput-graph 500 {log_file} > \
             graph.svg 2> {results_file}"
