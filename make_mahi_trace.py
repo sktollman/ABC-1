@@ -24,7 +24,7 @@ if __name__ == '__main__':
     parser.add_argument('--bw',
             type=int,
             required=True,
-            help="can be 12, 36, 48")
+            help="can be 12, 24, 36, 48")
 
     args = parser.parse_args()
 
