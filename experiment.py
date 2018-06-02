@@ -5,13 +5,15 @@
 # ABC reproduction.
 #
 
-from subprocess import call
+from subprocess import Popen
 from collections import namedtuple
 from protocols.cc_protocol import CCProtocol
 from utils import get_protocol
 
 import os
 import argparse
+import time
+import sys
 
 TRACE_DIR = '~/ABC-1/mahimahi/traces/'
 BW_TRACE_DIR = '~/ABC-1'
@@ -57,6 +59,47 @@ def print_fig2_results(cc_proto):
         print("No results found for proto %s at path: %s" 
                 % (proto_name, cc_proto.results_file_path))
 
+def run_cmds(cmds):
+    """Runs the commands in CMDS. 
+
+    Runs processes in the background
+    unless it is a mahimahi command (i.e. begins
+    with mm-delay).  The mm-throughput-graph command, if it
+    is present, is assumed to occur as the last command
+    """
+    processes = []
+    try:
+        for c in cmds:
+            print("$ %s" % ' '.join(c.split(' ')))
+
+            # Ugly hack, I'm sorry. Don't know how else
+            # to respect a sleep between commands.
+            if c.startswith('sleep '):
+                time.sleep(int(c.split(' ')[-1]))
+                continue
+            
+            proc = Popen(c, shell=True)
+            processes.append(proc)
+
+            # Wait when we reach the mahimahi command
+            if c.startswith("mm-delay "):
+                proc.wait()
+
+            # Wait when we are done and we need to output the throughput graph
+            if c.startswith("mm-throughput-graph "):
+                proc.wait()
+
+    except KeyboardInterrupt:
+        pass
+    
+    # Kill all lingering processes
+    for p in processes:
+        if p:
+            try:
+                p.kill()
+            except OSError:
+                pass
+
 def run_fig2_exp(schemes, args, run_full):
     """ Runs experiments for the given schemes, in
     the style of figure 2.
@@ -94,8 +137,7 @@ def run_fig2_exp(schemes, args, run_full):
     else:
         raise ValueError("Unknown experiment: %s" % exp)
  
-    # Run each scheme experiment
-    
+    # Run experiment for each scheme 
     for scheme in schemes:
         print(" ---- Running Experiment %s for protocol: %s ---- \n" % (exp, scheme))
         protocol = get_protocol(scheme, uplink_ext, downlink_ext)
@@ -103,9 +145,7 @@ def run_fig2_exp(schemes, args, run_full):
         
         
         if scheme in run_full:
-            for c in cmds:
-                print("$ %s" % ' '.join(c.split(' ')))
-                call(c, shell=True)
+           run_cmds(cmds) 
         else:
             print(" Experiment skipped ")
 
