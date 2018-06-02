@@ -61,6 +61,15 @@ def get_protocol(scheme, uplink_ext, downlink_ext):
 
     elif scheme == "copa":
         config_file_path = 'protocols/config/copa.json'
+    
+    elif scheme == "ledbat":
+        config_file_path = 'protocols/config/ledbat.json'
+
+    elif scheme == "pcc":
+        config_file_path = 'protocols/config/pcc.json'
+
+    elif scheme == "quic":
+        config_file_path = 'protocols/config/quic.json'
 
     else:
         raise ValueError("Unknown scheme: %s" % scheme)

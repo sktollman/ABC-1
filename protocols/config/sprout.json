@@ -1,6 +1,6 @@
 { "name": "sprout",
-  "prep_commands": ["python ~/pantheon/src/wrappers/sprout.py receiver 12345 &"],
-  "mahimahi_command": "python ~/pantheon/src/wrappers/sprout.py sender 100.64.0.1 12345",
+  "prep_commands": ["~/pantheon/src/wrappers/sprout.py receiver 9090 &"],
+  "mahimahi_command": "~/pantheon/src/wrappers/sprout.py sender $MAHIMAHI_BASE 9090",
   "cleanup_commands": ["pkill -f sproutbt2 &> /dev/null"],
   "uplink_queue": "",
   "uplink_queue_args": ""

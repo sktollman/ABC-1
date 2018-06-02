@@ -1,7 +1,7 @@
 { "name": "pcc",
-  "prep_commands": ["python ~/pantheon/src/wrappers/pcc.py receiver 12345 &"],
-  "mahimahi_command": "python ~/pantheon/src/wrappers/pcc.py sender 100.64.0.1 12345",
-  "cleanup_commands": ["pkill -f sproutbt2 &> /dev/null"],
+  "prep_commands": ["python ~/pantheon/src/wrappers/pcc.py receiver 9090 &"],
+  "mahimahi_command": "python ~/pantheon/src/wrappers/pcc.py sender $MAHIMAHI_BASE 9090",
+  "cleanup_commands": ["killall pcc"],
   "uplink_queue": "droptail",
-  "uplink_queue_args": "packets=1000"
+  "uplink_queue_args": "packets=100"
 }

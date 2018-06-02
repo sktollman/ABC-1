@@ -28,7 +28,7 @@ src/experiments/setup.py --setup --schemes "sprout verus copa ledbat pcc quic"
 src/experiments/setup.py --schemes "sprout verus copa ledbat pcc quic"
 
 # Apply patches to Pantheon code
-cd ~/ABC/patches
+cd ~/ABC-1/patches
 sh apply_pantheon_patches.sh
 
 cd ~/ABC-1

@@ -21,7 +21,7 @@ STATIC_BW = 'bw48.mahi'
 UPLINK_LOG_FILE_FMT = 'logs/{}-UPLINK_{}-DOWNLINK_{}.log'
 RESULTS_FILE_FMT = 'results/{}-UPLINK_{}-DOWNLINK_{}.txt'
 
-Stats = namedtuple('Stats', ['util', 'delay', 'throughput', 'power'])
+Stats = namedtuple('Stats', ['util', 'delay', 'throughput', 'power', 'queueing_delay'])
 stats = dict()
 
 def print_fig2_results(cc_proto):
@@ -44,12 +44,12 @@ def print_fig2_results(cc_proto):
             utilization = avg_throughput / avg_capacity
             power_score = 1000 * avg_throughput / float(signal_delay)
 
-            stats[proto_name] = Stats(utilization, signal_delay, avg_throughput, power_score)
+            stats[proto_name] = Stats(utilization, signal_delay, avg_throughput, power_score, queueing_delay)
 
             print("\n  ~~ Results for protocol: %s ~~" % proto_name)
             print("\tutilization: %s%%" % str(round(100 * utilization, 2)))
             print("\tthroughput: %s" % str(avg_throughput))
-            print("\tdelay: %s" % str(signal_delay))
+            print("\tsignal delay: %s" % str(signal_delay))
             print("\tpower score: %s\n" % str(power_score))
 
     else:
@@ -168,5 +168,5 @@ if __name__ == '__main__':
         
         with open(args.csv_out, 'w') as f:
             for proto, s in stats.items():
-                f.write('{}, {}, {}, {}, {}\n'.format(proto, 
-                    s.util, s.delay, s.throughput, s.power))
+                f.write('{}, {}, {}, {}, {}, {}\n'.format(proto, 
+                    s.util, s.delay, s.throughput, s.power, s.queueing_delay))

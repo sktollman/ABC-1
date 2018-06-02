@@ -81,6 +81,8 @@ if __name__ == '__main__':
         help='svg file to save plot', type=str)
     parser.add_argument('-o', '--original-figure', default=None,
         help='original result to plot [2a, 2b]', type=str)
+    parser.add_argument('--use_queueing_delay', action='store_true',
+        help='use queueing delay on the x axis instead of signal delay')
     args = parser.parse_args()
 
     stats = dict()
@@ -90,7 +92,10 @@ if __name__ == '__main__':
         for fn in args.data_filename:
             with open(fn) as f:
                 for l in f:
-                    proto, util, delay, throughput, power = l.split(', ')
+                    proto, util, delay, throughput, power, queueing_delay = l.split(', ')
+                    if args.use_queueing_delay:
+                        delay = queueing_delay
+
                     temp_stats[proto].append(Stats(float(util), float(delay)))
         for proto, stats_list in temp_stats.items():
             avg_util = reduce(lambda x, y: x + y,

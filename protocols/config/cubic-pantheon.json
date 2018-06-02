@@ -1,0 +1,8 @@
+{
+  "name": "cubic",
+  "prep_commands": ["python ~/pantheon/src/wrappers/cubic.py receiver 12345 &"],
+  "mahimahi_command": "python ~/pantheon/src/wrappers/cubic.py sender 100.64.0.1 12345",
+  "cleanup_commands": ["killall iperf"],
+  "uplink_queue": "droptail",
+  "uplink_queue_args": "packets=100"
+}

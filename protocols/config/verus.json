@@ -1,8 +1,8 @@
 {
   "name": "verus",
-  "prep_commands": ["python ~/pantheon/src/wrappers/verus.py sender 12345 &", "sleep 10"],
-  "mahimahi_command": "python ~/pantheon/src/wrappers/verus.py receiver 100.64.0.1 12345",
+  "prep_commands": ["~/pantheon/src/wrappers/verus.py sender 9090 &", "sleep 10"],
+  "mahimahi_command": "~/pantheon/src/wrappers/verus.py receiver $MAHIMAHI_BASE 9090",
   "cleanup_commands": ["pkill -f verus_client", "pkill -f verus_server"],
   "uplink_queue": "droptail",
-  "uplink_queue_args": "packets=1000"
+  "uplink_queue_args": "packets=100"
 }
