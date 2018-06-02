@@ -57,7 +57,7 @@ def print_fig2_results(cc_proto):
         print("No results found for proto %s at path: %s" 
                 % (proto_name, cc_proto.results_file_path))
 
-def run_fig2_exp(schemes, exp, run_full):
+def run_fig2_exp(schemes, args, run_full):
     """ Runs experiments for the given schemes, in
     the style of figure 2.
 
@@ -66,6 +66,7 @@ def run_fig2_exp(schemes, exp, run_full):
     in schemes but not in run_full.
     """
     delay = 50
+    exp = args.experiment
     
     # Set up uplink/downlink trace combination
     
@@ -98,7 +99,7 @@ def run_fig2_exp(schemes, exp, run_full):
     for scheme in schemes:
         print(" ---- Running Experiment %s for protocol: %s ---- \n" % (exp, scheme))
         protocol = get_protocol(scheme, uplink_ext, downlink_ext)
-        cmds = protocol.get_figure2_cmds(delay, uplink_trace, downlink_trace)
+        cmds = protocol.get_figure2_cmds(delay, uplink_trace, downlink_trace, args)
         
         
         if scheme in run_full:
@@ -123,6 +124,9 @@ if __name__ == '__main__':
         help='The experiment to run: e.g. figure2a, figure2b, bothlinks')
     parser.add_argument('--csv-out', default=None, type=str,
         help='save results to CSV file with this name')
+
+    parser.add_argument('--print-graph', action='store_true',
+            help='print throughput graph for each protocol')
 
     skip = parser.add_mutually_exclusive_group(required=False)
     skip.add_argument('--run-full', default=None,
@@ -157,7 +161,7 @@ if __name__ == '__main__':
     
     if args.experiment == "figure2a" or args.experiment == "figure2b" \
             or args.experiment == "bothlinks" or args.experiment == "pa1":
-        run_fig2_exp(schemes, args.experiment, run_full)
+        run_fig2_exp(schemes, args, run_full)
     else:
         raise NotImplementedError("Unknown experiment: %s" % args.experiment)
     

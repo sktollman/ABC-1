@@ -17,7 +17,7 @@ class CCProtocol:
             -- bash -c '{mahimahi_command}'"
 
     fig_2_results_cmd_fmt = "mm-throughput-graph 500 {log_file} > \
-            graph.svg 2> {results_file}"
+            {graph_file} 2> {results_file}"
 
     mahimahi_queue_args_fmt = "--uplink-queue={uplink_queue} \
             --uplink-queue-args=\"{uplink_queue_args}\""
@@ -48,7 +48,7 @@ class CCProtocol:
         """
         raise NotImplementedError
 
-    def get_figure2_cmds(self, mm_delay, uplink_trace, downlink_trace):
+    def get_figure2_cmds(self, mm_delay, uplink_trace, downlink_trace, args):
         """ Returns list of commands to run to generate Figure 2 results.
         """
         
@@ -65,9 +65,13 @@ class CCProtocol:
                                                  uplink=uplink_trace,
                                                  downlink=downlink_trace,
                                                  mahimahi_command=self.config['mahimahi_command'])
-
+        
+        graph_out = '/dev/null'
+        if args.print_graph:
+            graph_out = '%s_graph.svg' % self.config['name']
         results_cmd = self.fig_2_results_cmd_fmt.format(log_file=self.uplink_log_file_path,
-                                                   results_file=self.results_file_path)
+                                                   results_file=self.results_file_path,
+                                                   graph_file=graph_out)
 
         cleanup_commands = self.config['cleanup_commands']
         return prep_commands + [mahimahi_cmd] + cleanup_commands + [results_cmd]
