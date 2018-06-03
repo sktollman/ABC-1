@@ -17,7 +17,6 @@
 cd ~/pantheon
 sh tools/fetch_submodules.sh
 src/experiments/setup.py --install-deps --schemes "sprout verus copa ledbat pcc quic"
-git add 
 
 # Make sure we catch the sysctl binary if it is in /sbin
 export PATH=$PATH:/sbin
