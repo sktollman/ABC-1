@@ -73,9 +73,16 @@ def run_cmds(cmds):
               lists of command strings to run.
     """
     processes = []
+    home = os.path.expanduser('~')
+    devnull = open(os.devnull, 'w')
     try:
         for c_type in cmds:
             for c in cmds[c_type]:
+                if not c: continue
+
+                # Need full pathname for home
+                c = c.replace('~', home)
+
                 print("$ %s" % ' '.join(c.split(' ')))
 
                 # Ugly hack, I'm sorry. Don't know how else
@@ -85,20 +92,26 @@ def run_cmds(cmds):
                     continue
 
                 if c_type == "prep":
-                    proc = Popen(shlex.split(c))
+                    proc = Popen(
+                            shlex.split(c), stdout=devnull, stderr=devnull
+                            )
                 else:
-                    proc = Popen(c, shell=True)
+                    proc = Popen(
+                            c, shell=True, stdout=devnull,
+                            stderr=devnull
+                            )
 
                 processes.append(proc)
 
-                # Wait when we reach the mahimahi command or the
-                # results command.  Everything else (except sleeps)
-                # go to the background.
-                if c_type == "mahimahi" or c_type == "results":
+                # We run all 'prep' commands in the background,
+                # and wait for everything else to finish.
+                if c_type != 'prep':
                     proc.wait()
 
     except KeyboardInterrupt:
         pass
+
+    devnull.close()
    
     # Kill all lingering processes
     for p in processes:
