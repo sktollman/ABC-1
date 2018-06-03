@@ -54,7 +54,7 @@ def print_fig2_results(cc_proto):
             print("\tpower score: %s\n" % str(power_score))
 
     else:
-        print("No results found for proto %s at path: %s" 
+        print("No results found for proto %s at path: %s"
                 % (proto_name, cc_proto.results_file_path))
 
 def run_fig2_exp(schemes, args, run_full):
@@ -65,11 +65,11 @@ def run_fig2_exp(schemes, args, run_full):
     assuming that results files already exist for protocols present
     in schemes but not in run_full.
     """
-    delay = 50
+    delay = 20
     exp = args.experiment
-    
+
     # Set up uplink/downlink trace combination
-    
+
     if exp == 'figure2a':
         uplink_ext = 'Verizon-LTE-short.up'
         downlink_ext = STATIC_BW
@@ -93,15 +93,15 @@ def run_fig2_exp(schemes, args, run_full):
         downlink_trace = os.path.join(TRACE_DIR, downlink_ext)
     else:
         raise ValueError("Unknown experiment: %s" % exp)
- 
+
     # Run each scheme experiment
-    
+
     for scheme in schemes:
         print(" ---- Running Experiment %s for protocol: %s ---- \n" % (exp, scheme))
         protocol = get_protocol(scheme, uplink_ext, downlink_ext)
         cmds = protocol.get_figure2_cmds(delay, uplink_trace, downlink_trace, args)
-        
-        
+
+
         if scheme in run_full:
             for c in cmds:
                 print("$ %s" % ' '.join(c.split(' ')))
@@ -134,19 +134,19 @@ if __name__ == '__main__':
             nargs='+')
     skip.add_argument('--reuse-results', default=None,
             help='reuse existing results for the specified protocols', nargs='+')
-    
+
     args = parser.parse_args()
-    
+
     if not os.path.exists('logs'): os.makedirs('logs')
     if not os.path.exists('results'): os.makedirs('results')
     if not os.path.exists('graphs'): os.makedirs('graphs')
-    
+
     # What schemes to run?
     if args.schemes:
         schemes = args.schemes
     else:
         schemes = ALL_SCHEMES
-    
+
     # What schemes to run in full and which to reuse results from?
     run_full = schemes
     if args.reuse_results:
@@ -159,20 +159,20 @@ if __name__ == '__main__':
             run_full = schemes
         else:
             run_full = [s for s in schemes if s not in args.run_full]
-    
+
     if args.experiment == "figure2a" or args.experiment == "figure2b" \
             or args.experiment == "bothlinks" or args.experiment == "pa1":
         run_fig2_exp(schemes, args, run_full)
     else:
         raise NotImplementedError("Unknown experiment: %s" % args.experiment)
-    
+
     # Output CSV file with results, if filename passed in arguments.
     if args.csv_out:
 
         if not args.csv_out.endswith('.csv'):
             args.filename = '{}.csv'.format(args.csv_out)
-        
+
         with open(args.csv_out, 'w') as f:
             for proto, s in stats.items():
-                f.write('{}, {}, {}, {}, {}, {}\n'.format(proto, 
+                f.write('{}, {}, {}, {}, {}, {}\n'.format(proto,
                     s.util, s.delay, s.throughput, s.power, s.queuing_delay))
