@@ -6,6 +6,7 @@
 
 import json
 import pprint
+import collections
 
 
 class CCProtocol:
@@ -49,32 +50,40 @@ class CCProtocol:
         raise NotImplementedError
 
     def get_figure2_cmds(self, mm_delay, uplink_trace, downlink_trace, args):
-        """ Returns list of commands to run to generate Figure 2 results.
+        """ Returns ordered dictionary of commands
+        to run to generate Figure 2 results.
         """
         
         if self.config['uplink_queue'] == '':
             queue_args = ''
         else:
-            queue_args = self.mahimahi_queue_args_fmt.format(uplink_queue=self.config['uplink_queue'],
-                                        uplink_queue_args=self.config['uplink_queue_args'])
+            queue_args = self.mahimahi_queue_args_fmt.format(
+                    uplink_queue=self.config['uplink_queue'], 
+                    uplink_queue_args=self.config['uplink_queue_args']
+            )
 
         prep_commands = self.config['prep_commands']
-        mahimahi_cmd = self.fig_2_base_cmd_fmt.format(delay=str(mm_delay),
-                                                 uplink_log=self.uplink_log_file_path,
-                                                 queue_args=queue_args,
-                                                 uplink=uplink_trace,
-                                                 downlink=downlink_trace,
-                                                 mahimahi_command=self.config['mahimahi_command'])
+        mahimahi_cmd = self.fig_2_base_cmd_fmt.format(
+                delay=str(mm_delay), uplink_log=self.uplink_log_file_path,
+                queue_args=queue_args, uplink=uplink_trace,
+                downlink=downlink_trace, mahimahi_command=self.config['mahimahi_command']
+        )
         
         graph_out = '/dev/null'
         if args.print_graph:
             graph_out = 'graphs/%s_graph.svg' % self.config['name']
-        results_cmd = self.fig_2_results_cmd_fmt.format(log_file=self.uplink_log_file_path,
-                                                   results_file=self.results_file_path,
-                                                   graph_file=graph_out)
+        results_cmd = self.fig_2_results_cmd_fmt.format(
+                log_file=self.uplink_log_file_path, results_file=self.results_file_path,
+                graph_file=graph_out)
 
         cleanup_commands = self.config['cleanup_commands']
-        return prep_commands + [mahimahi_cmd] + cleanup_commands + [results_cmd]
+        
+        commands = [("prep", prep_commands),
+                    ("mahimahi", [mahimahi_cmd]),
+                    ("cleanup", cleanup_commands),
+                    ("results", [results_cmd])]
+
+        return collections.OrderedDict(commands)
 
     def show(self):
         """Pretty print thyself

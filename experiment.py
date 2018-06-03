@@ -14,6 +14,7 @@ import os
 import argparse
 import time
 import sys
+import shlex
 
 TRACE_DIR = '~/ABC-1/mahimahi/traces/'
 BW_TRACE_DIR = '~/ABC-1'
@@ -66,32 +67,39 @@ def run_cmds(cmds):
     unless it is a mahimahi command (i.e. begins
     with mm-delay).  The mm-throughput-graph command, if it
     is present, is assumed to occur as the last command
+
+    Args:
+        cmds: (OrderedDict) Maps descriptions of commands to
+              lists of command strings to run.
     """
     processes = []
     try:
-        for c in cmds:
-            print("$ %s" % ' '.join(c.split(' ')))
+        for c_type in cmds:
+            for c in cmds[c_type]:
+                print("$ %s" % ' '.join(c.split(' ')))
 
-            # Ugly hack, I'm sorry. Don't know how else
-            # to respect a sleep between commands.
-            if c.startswith('sleep '):
-                time.sleep(int(c.split(' ')[-1]))
-                continue
-            
-            proc = Popen(c, shell=True)
-            processes.append(proc)
+                # Ugly hack, I'm sorry. Don't know how else
+                # to respect a sleep between commands.
+                if c.startswith('sleep '):
+                    time.sleep(int(c.split(' ')[-1]))
+                    continue
 
-            # Wait when we reach the mahimahi command
-            if c.startswith("mm-delay "):
-                proc.wait()
+                if c_type == "prep":
+                    proc = Popen(shlex.split(c))
+                else:
+                    proc = Popen(c, shell=True)
 
-            # Wait when we are done and we need to output the throughput graph
-            if c.startswith("mm-throughput-graph "):
-                proc.wait()
+                processes.append(proc)
+
+                # Wait when we reach the mahimahi command or the
+                # results command.  Everything else (except sleeps)
+                # go to the background.
+                if c_type == "mahimahi" or c_type == "results":
+                    proc.wait()
 
     except KeyboardInterrupt:
         pass
-    
+   
     # Kill all lingering processes
     for p in processes:
         if p:
@@ -136,6 +144,10 @@ def run_fig2_exp(schemes, args, run_full):
         downlink_trace = os.path.join(TRACE_DIR, downlink_ext)
     else:
         raise ValueError("Unknown experiment: %s" % exp)
+
+    if args.tiny_trace:
+        uplink_trace += "-tiny"
+        downlink_trace += "-tiny"
  
     # Run experiment for each scheme 
     for scheme in schemes:
@@ -150,7 +162,9 @@ def run_fig2_exp(schemes, args, run_full):
             print(" Experiment skipped ")
 
         print_fig2_results(protocol)
-        print(" ---- Done ---- \n")
+        time.sleep(2)
+    
+    print(" ---- Done ---- \n")
 
 ALL_SCHEMES = ['abc', 'cubic', 'sprout', 'verus', 'vegas', \
         'cubiccodel', 'cubicpie', 'bbr']
@@ -167,6 +181,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--print-graph', action='store_true',
             help='print throughput graph for each protocol')
+    parser.add_argument('--tiny-trace', action='store_true',
+            help='use a 5 second version of the Verizon/BW traces')
 
     skip = parser.add_mutually_exclusive_group(required=False)
     skip.add_argument('--run-full', default=None,
