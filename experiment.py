@@ -60,7 +60,7 @@ def print_fig2_results(cc_proto):
         print("No results found for proto %s at path: %s" 
                 % (proto_name, cc_proto.results_file_path))
 
-def run_cmds(cmds):
+def run_cmds(cmds, verbose=False):
     """Runs the commands in CMDS. 
 
     Runs processes in the background
@@ -82,8 +82,9 @@ def run_cmds(cmds):
 
                 # Need full pathname for home
                 c = c.replace('~', home)
-
-                print("$ %s" % ' '.join(c.split(' ')))
+                
+                if verbose:
+                    print("$ %s" % ' '.join(c.split(' ')))
 
                 # Ugly hack, I'm sorry. Don't know how else
                 # to respect a sleep between commands.
@@ -170,7 +171,7 @@ def run_fig2_exp(schemes, args, run_full):
         
         
         if scheme in run_full:
-           run_cmds(cmds) 
+           run_cmds(cmds, args.verbose)
         else:
             print(" Experiment skipped ")
 
@@ -196,6 +197,9 @@ if __name__ == '__main__':
             help='print throughput graph for each protocol')
     parser.add_argument('--tiny-trace', action='store_true',
             help='use a 5 second version of the Verizon/BW traces')
+    
+    parser.add_argument('--verbose', action='store_true',
+            help='be verbose during the experiment')
 
     skip = parser.add_mutually_exclusive_group(required=False)
     skip.add_argument('--run-full', default=None,
