@@ -2,10 +2,11 @@
 # Contains utility routines for our reproduction.
 #
 
+import os
 from protocols.cc_protocol import CCProtocol
 
-UPLINK_LOG_FILE_FMT = 'logs/{}-UPLINK_{}-DOWNLINK_{}.log'
-RESULTS_FILE_FMT = 'results/{}-UPLINK_{}-DOWNLINK_{}.txt'
+UPLINK_LOG_FILE_FMT = 'logs/{}/UPLINK_{}-DOWNLINK_{}.log'
+RESULTS_FILE_FMT = 'results/{}/UPLINK_{}-DOWNLINK_{}.txt'
 
 def get_protocol(scheme, uplink_ext, downlink_ext):
     """Returns a CCProtocol object populated with
@@ -22,6 +23,12 @@ def get_protocol(scheme, uplink_ext, downlink_ext):
     config_file_path = None
     results_file_path = RESULTS_FILE_FMT.format(scheme, uplink_ext, downlink_ext)
     uplink_log_file_path = UPLINK_LOG_FILE_FMT.format(scheme, uplink_ext, downlink_ext)
+
+    results_dir = os.path.dirname(results_file_path)
+    log_dir = os.path.dirname(uplink_log_file_path)
+
+    if not os.path.exists(results_dir): os.makedirs(results_dir)
+    if not os.path.exists(log_dir): os.makedirs(log_dir)
 
     extra_config = {}
     

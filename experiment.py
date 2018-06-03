@@ -5,13 +5,16 @@
 # ABC reproduction.
 #
 
-from subprocess import call
+from subprocess import Popen
 from collections import namedtuple
 from protocols.cc_protocol import CCProtocol
 from utils import get_protocol
 
 import os
 import argparse
+import time
+import sys
+import shlex
 
 TRACE_DIR = '~/ABC-1/mahimahi/traces/'
 BW_TRACE_DIR = '~/ABC-1'
@@ -57,6 +60,67 @@ def print_fig2_results(cc_proto):
         print("No results found for proto %s at path: %s" 
                 % (proto_name, cc_proto.results_file_path))
 
+def run_cmds(cmds, verbose=False):
+    """Runs the commands in CMDS. 
+    
+    Runs "prep" commands in the background, and
+    all other commands sequentially.  Cleans up 
+    lingering processes returned by Popen call.
+    
+    Args:
+        cmds: (OrderedDict) Maps descriptions of commands to
+              lists of command strings to run.
+    """
+    processes = []
+    home = os.path.expanduser('~')
+    devnull = open(os.devnull, 'w')
+    try:
+        for c_type in cmds:
+            for c in cmds[c_type]:
+                if not c: continue
+
+                # Need full pathname for home
+                c = c.replace('~', home)
+                
+                if verbose:
+                    print("$ %s" % ' '.join(c.split(' ')))
+
+                # Ugly hack, I'm sorry. Don't know how else
+                # to respect a sleep between commands.
+                if c.startswith('sleep '):
+                    time.sleep(int(c.split(' ')[-1]))
+                    continue
+
+                if c_type == "prep":
+                    proc = Popen(
+                            shlex.split(c), stdout=devnull, stderr=devnull
+                            )
+                else:
+                    proc = Popen(
+                            c, shell=True, stdout=devnull,
+                            stderr=devnull
+                            )
+
+                processes.append(proc)
+
+                # We run all 'prep' commands in the background,
+                # and wait for everything else to finish.
+                if c_type != 'prep':
+                    proc.wait()
+
+    except KeyboardInterrupt:
+        pass
+
+    devnull.close()
+   
+    # Kill all lingering processes
+    for p in processes:
+        if p:
+            try:
+                p.kill()
+            except OSError:
+                pass
+
 def run_fig2_exp(schemes, args, run_full):
     """ Runs experiments for the given schemes, in
     the style of figure 2.
@@ -93,9 +157,12 @@ def run_fig2_exp(schemes, args, run_full):
         downlink_trace = os.path.join(TRACE_DIR, downlink_ext)
     else:
         raise ValueError("Unknown experiment: %s" % exp)
+
+    if args.tiny_trace:
+        uplink_trace += "-tiny"
+        downlink_trace += "-tiny"
  
-    # Run each scheme experiment
-    
+    # Run experiment for each scheme 
     for scheme in schemes:
         print(" ---- Running Experiment %s for protocol: %s ---- \n" % (exp, scheme))
         protocol = get_protocol(scheme, uplink_ext, downlink_ext)
@@ -103,14 +170,14 @@ def run_fig2_exp(schemes, args, run_full):
         
         
         if scheme in run_full:
-            for c in cmds:
-                print("$ %s" % ' '.join(c.split(' ')))
-                call(c, shell=True)
+           run_cmds(cmds, args.verbose)
         else:
             print(" Experiment skipped ")
 
         print_fig2_results(protocol)
-        print(" ---- Done ---- \n")
+        time.sleep(2)
+    
+    print(" ---- Done ---- \n")
 
 ALL_SCHEMES = ['abc', 'cubic', 'sprout', 'verus', 'vegas', \
         'cubiccodel', 'cubicpie', 'bbr']
@@ -127,6 +194,11 @@ if __name__ == '__main__':
 
     parser.add_argument('--print-graph', action='store_true',
             help='print throughput graph for each protocol')
+    parser.add_argument('--tiny-trace', action='store_true',
+            help='use a 5 second version of the Verizon/BW traces')
+    
+    parser.add_argument('--verbose', action='store_true',
+            help='be verbose during the experiment')
 
     skip = parser.add_mutually_exclusive_group(required=False)
     skip.add_argument('--run-full', default=None,
