@@ -62,12 +62,11 @@ def print_fig2_results(cc_proto):
 
 def run_cmds(cmds, verbose=False):
     """Runs the commands in CMDS. 
-
-    Runs processes in the background
-    unless it is a mahimahi command (i.e. begins
-    with mm-delay).  The mm-throughput-graph command, if it
-    is present, is assumed to occur as the last command
-
+    
+    Runs "prep" commands in the background, and
+    all other commands sequentially.  Cleans up 
+    lingering processes returned by Popen call.
+    
     Args:
         cmds: (OrderedDict) Maps descriptions of commands to
               lists of command strings to run.
