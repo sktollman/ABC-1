@@ -1,7 +1,7 @@
 { "name": "ledbat",
-  "prep_commands": ["python ~/pantheon/src/wrappers/ledbat.py receiver 9090 &"],
+  "prep_commands": ["python ~/pantheon/src/wrappers/ledbat.py receiver 9090"],
   "mahimahi_command": "python ~/pantheon/src/wrappers/ledbat.py sender $MAHIMAHI_BASE 9090",
-  "cleanup_commands": ["killall ledbat"],
+  "cleanup_commands": ["killall sender", "killall receiver", "killall ucat-static"],
   "uplink_queue": "droptail",
   "uplink_queue_args": "packets=100"
 }

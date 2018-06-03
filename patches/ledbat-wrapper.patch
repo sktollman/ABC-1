@@ -1,0 +1,11 @@
+--- ledbat.py	2018-06-03 18:34:47.775367722 +0000
++++ ledbat-new.py	2018-06-03 18:34:56.392212087 +0000
+@@ -31,7 +31,7 @@
+         proc = Popen(cmd, stdin=PIPE)
+ 
+         # send at full speed
+-        timeout = time.time() + 75
++        timeout = time.time() + 1000
+         while True:
+             print("wrote")
+             proc.stdin.write(os.urandom(1024))
