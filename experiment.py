@@ -51,10 +51,11 @@ def print_fig2_results(cc_proto):
 
             print("\n  ~~ Results for protocol: %s ~~" % proto_name)
             print("\tutilization: %s%%" % str(round(100 * utilization, 2)))
-            print("\tthroughput: %s" % str(avg_throughput))
-            print("\tsignal delay: %s" % str(signal_delay))
-            print("\tqueuing delay: %s" % str(queuing_delay))
-            print("\tpower score: %s\n" % str(power_score))
+            print("\tthroughput: %s Mbps" % str(avg_throughput))
+            print("\tsignal delay: %s ms" % str(signal_delay))
+            print("\tqueuing delay: %s ms" % str(queuing_delay))
+            print("\tpower score: %s" % str(power_score))
+            print("\tavg capacity: %s Mbps\n" % str(avg_capacity))
 
     else:
         print("No results found for proto %s at path: %s" 
@@ -93,12 +94,12 @@ def run_cmds(cmds, verbose=False):
 
                 if c_type == "prep":
                     proc = Popen(
-                            shlex.split(c), stdout=devnull, stderr=devnull
+                            shlex.split(c)#, stdout=devnull, stderr=devnull
                             )
                 else:
                     proc = Popen(
-                            c, shell=True, stdout=devnull,
-                            stderr=devnull
+                            c, shell=True#, stdout=devnull,
+                            #stderr=devnull
                             )
 
                 processes.append(proc)
@@ -140,10 +141,10 @@ def run_fig2_exp(schemes, args, run_full):
         uplink_trace = os.path.join(TRACE_DIR, uplink_ext)
         downlink_trace = os.path.join(BW_TRACE_DIR, downlink_ext)
     elif exp == 'figure2b':
-        uplink_ext = STATIC_BW
-        downlink_ext = 'Verizon-LTE-short.down'
-        uplink_trace = os.path.join(BW_TRACE_DIR, uplink_ext)
-        downlink_trace = os.path.join(TRACE_DIR, downlink_ext)
+        uplink_ext = 'Verizon-LTE-short.down'
+        downlink_ext = STATIC_BW
+        uplink_trace = os.path.join(TRACE_DIR, uplink_ext)
+        downlink_trace = os.path.join(BW_TRACE_DIR, downlink_ext)
     elif exp == 'bothlinks':
         uplink_ext = 'Verizon-LTE-short.up'
         downlink_ext = 'Verizon-LTE-short.down'
