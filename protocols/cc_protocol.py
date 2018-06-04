@@ -8,7 +8,6 @@ import json
 import pprint
 import collections
 
-
 class CCProtocol:
 
     fig_2_base_cmd_fmt = "mm-delay {delay} \
@@ -53,23 +52,24 @@ class CCProtocol:
         """ Returns ordered dictionary of commands
         to run to generate Figure 2 results.
         """
+        FLIP_FULL = True
         link = self.config.get('link', 'uplink')
         if self.config['uplink_queue'] == '':
             queue_args = ''
         else:
             queue_args = self.mahimahi_queue_args_fmt.format(
-                    link=link,
+                    link=link if FLIP_FULL else 'uplink',
                     queue=self.config['uplink_queue'], 
                     queue_args=self.config['uplink_queue_args']
             )
 
         prep_commands = self.config['prep_commands']
-        uplink = uplink_trace if link == 'uplink' else downlink_trace
-        downlink = downlink_trace if link == 'uplink' else uplink_trace
+        if link == 'downlink' and FLIP_FULL:
+            uplink_trace, downlink_trace = (downlink_trace, uplink_trace)
         mahimahi_cmd = self.fig_2_base_cmd_fmt.format(
                 link=link, delay=str(mm_delay), log=self.uplink_log_file_path,
-                queue_args=queue_args, uplink=uplink,
-                downlink=downlink, mahimahi_command=self.config['mahimahi_command']
+                queue_args=queue_args, uplink=uplink_trace,
+                downlink=downlink_trace, mahimahi_command=self.config['mahimahi_command']
         )
         
         graph_out = '/dev/null'
