@@ -11,7 +11,7 @@ import collections
 class CCProtocol:
 
     fig_2_base_cmd_fmt = "mm-delay {delay} \
-            mm-link --once --{link}-log={log} \
+            mm-link --once --{target_link}-log={log} \
             {queue_args} \
             {uplink} {downlink} \
             -- bash -c '{mahimahi_command}'"
@@ -19,8 +19,8 @@ class CCProtocol:
     fig_2_results_cmd_fmt = "mm-throughput-graph 500 {log_file} > \
             {graph_file} 2> {results_file}"
 
-    mahimahi_queue_args_fmt = "--{link}-queue={queue} \
-            --{link}-queue-args=\"{queue_args}\""
+    mahimahi_queue_args_fmt = "--{target_link}-queue={queue} \
+            --{target_link}-queue-args=\"{queue_args}\""
 
     def __init__(self, config_file_path, results_file_path, 
             uplink_log_file_path, extra_args):
@@ -53,21 +53,21 @@ class CCProtocol:
         to run to generate Figure 2 results.
         """
         FLIP_FULL = True
-        link = self.config.get('link', 'uplink')
+        target_link = self.config.get('target_link', 'uplink')
         if self.config['uplink_queue'] == '':
             queue_args = ''
         else:
             queue_args = self.mahimahi_queue_args_fmt.format(
-                    link=link if FLIP_FULL else 'uplink',
+                    target_link=target_link if FLIP_FULL else 'uplink',
                     queue=self.config['uplink_queue'], 
                     queue_args=self.config['uplink_queue_args']
             )
 
         prep_commands = self.config['prep_commands']
-        if link == 'downlink' and FLIP_FULL:
+        if target_link == 'downlink' and FLIP_FULL:
             uplink_trace, downlink_trace = (downlink_trace, uplink_trace)
         mahimahi_cmd = self.fig_2_base_cmd_fmt.format(
-                link=link, delay=str(mm_delay), log=self.uplink_log_file_path,
+                target_link=target_link, delay=str(mm_delay), log=self.uplink_log_file_path,
                 queue_args=queue_args, uplink=uplink_trace,
                 downlink=downlink_trace, mahimahi_command=self.config['mahimahi_command']
         )

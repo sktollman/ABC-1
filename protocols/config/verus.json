@@ -6,5 +6,5 @@
                        "killall verus_server", "killall verus_client"],
   "uplink_queue": "droptail",
   "uplink_queue_args": "packets=100",
-  "link": "downlink"
+  "target_link": "downlink"
 }
