@@ -58,7 +58,7 @@ class CCProtocol:
             queue_args = self.mahimahi_queue_args_fmt.format(uplink_queue=self.config['uplink_queue'],
                                         uplink_queue_args=self.config['uplink_queue_args'])
 
-        log_link = self.config.get('log_link', default='up')
+        log_link = self.config.get('log_link', 'up')
         prep_commands = self.config['prep_commands']
         mahimahi_cmd = self.fig_2_base_cmd_fmt.format(delay=str(mm_delay),
                                                  log_link=log_link,
