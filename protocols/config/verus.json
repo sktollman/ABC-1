@@ -5,5 +5,6 @@
   "cleanup_commands": ["killall sender", "killall receiver", 
                        "killall verus_server", "killall verus_client"],
   "uplink_queue": "droptail",
-  "uplink_queue_args": "packets=100"
+  "uplink_queue_args": "packets=100",
+  "link": "downlink"
 }
