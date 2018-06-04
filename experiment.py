@@ -142,8 +142,8 @@ def run_fig2_exp(schemes, args, run_full):
     elif exp == 'figure2b':
         uplink_ext = 'Verizon-LTE-short.down'
         downlink_ext = STATIC_BW
-        uplink_trace = os.path.join(BW_TRACE_DIR, uplink_ext)
-        downlink_trace = os.path.join(TRACE_DIR, downlink_ext)
+        uplink_trace = os.path.join(TRACE_DIR, uplink_ext)
+        downlink_trace = os.path.join(BW_TRACE_DIR, downlink_ext)
     elif exp == 'bothlinks':
         uplink_ext = 'Verizon-LTE-short.up'
         downlink_ext = 'Verizon-LTE-short.down'
