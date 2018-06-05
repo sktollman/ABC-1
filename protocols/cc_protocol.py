@@ -52,19 +52,18 @@ class CCProtocol:
         """ Returns ordered dictionary of commands
         to run to generate Figure 2 results.
         """
-        FLIP_FULL = True
         target_link = self.config.get('target_link', 'uplink')
         if self.config['uplink_queue'] == '':
             queue_args = ''
         else:
             queue_args = self.mahimahi_queue_args_fmt.format(
-                    target_link=target_link if FLIP_FULL else 'uplink',
+                    target_link=target_link,
                     queue=self.config['uplink_queue'], 
                     queue_args=self.config['uplink_queue_args']
             )
 
         prep_commands = self.config['prep_commands']
-        if target_link == 'downlink' and FLIP_FULL:
+        if target_link == 'downlink':
             uplink_trace, downlink_trace = (downlink_trace, uplink_trace)
         mahimahi_cmd = self.fig_2_base_cmd_fmt.format(
                 target_link=target_link, delay=str(mm_delay), log=self.uplink_log_file_path,
