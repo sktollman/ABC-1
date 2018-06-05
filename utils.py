@@ -47,7 +47,7 @@ def get_protocol(scheme, uplink_ext, downlink_ext):
     elif scheme == "vegas":
         config_file_path = 'protocols/config/cubic.json'
         extra_config['name'] = 'vegas'
-        extra_config['mahimahi_command'] = './start-tcp.sh vegas'
+        extra_config['mahimahi_command'] = 'sh start-tcp.sh vegas'
 
     elif scheme == "cubiccodel":
         config_file_path = 'protocols/config/cubic.json'
@@ -64,7 +64,7 @@ def get_protocol(scheme, uplink_ext, downlink_ext):
     elif scheme == "bbr":
         config_file_path = 'protocols/config/cubic.json'
         extra_config['name'] = 'bbr'
-        extra_config['mahimahi_command'] = './start-tcp.sh bbr'
+        extra_config['mahimahi_command'] = 'sh start-tcp.sh bbr'
 
     elif scheme == "copa":
         config_file_path = 'protocols/config/copa.json'
