@@ -11,6 +11,8 @@ from functools import reduce
 
 Stats = namedtuple('Stats', ['util', 'delay'])
 
+RTT = 100
+
 PARETO_COLOR = 'red'
 PARETO_COLOR_LIGHT = '#FFAEB9'
 
@@ -83,43 +85,19 @@ def plot_pareto_frontier(Xs, Ys, color, linestyle, maxX=True, maxY=True):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
-    parser.add_argument('-d', '--data-filename', default=None,
-        help='csv file from which to read data', type=str, nargs='+')
-    parser.add_argument('-p', '--plot-filename', default=None,
+    parser.add_argument(dest='data_filename',
+        help='csv file from which to read data', type=str)
+    parser.add_argument(dest='plot_filename',
         help='svg file to save plot', type=str)
     parser.add_argument('-o', '--original-figure', default=None,
         help='original result to plot [2a, 2b]', type=str)
-    parser.add_argument('--use_queuing_delay', action='store_true',
-        help='use queuing delay on the x axis instead of signal delay')
     args = parser.parse_args()
 
     stats = dict()
-
-    if args.data_filename:
-        temp_stats = defaultdict(lambda: list())
-        for fn in args.data_filename:
-            with open(fn) as f:
-                for l in f:
-                    proto, util, delay, throughput, power, queuing_delay = l.split(', ')
-                    if args.use_queuing_delay:
-                        delay = queuing_delay
-
-                    temp_stats[proto].append(Stats(float(util), float(delay)))
-        for proto, stats_list in temp_stats.items():
-            avg_util = reduce(lambda x, y: x + y,
-                map(lambda x: x.util, stats_list)) / float(len(stats_list))
-            avg_delay = reduce(lambda x, y: x + y,
-                map(lambda x: x.delay, stats_list)) / float(len(stats_list))
-            stats[proto] = Stats(avg_util, avg_delay)
-
-    else:
-        # use static stats
-        stats = {
-            'abc': Stats(util=.8926174496644295, delay=182.0),
-            'cubicpie': Stats(util=.5218120805369128, delay=160.0),
-            'cubiccodel': Stats(util=.6057046979865772, delay=142.0),
-            'cubic': Stats(util=.9563758389261746, delay=896.0)
-        }
+    with open(args.data_filename) as f:
+        for l in f:
+            proto, util, delay, throughput, power, queuing_delay = l.split(', ')
+            stats[proto] = Stats(float(util), float(queuing_delay) + RTT)
 
     plt.xlabel('95th percentile packet delay (ms)')
     plt.ylabel('Utilization')
@@ -168,8 +146,6 @@ if __name__ == '__main__':
             PARETO_COLOR, '--', maxY=False)
 
     # save plot to file
-    if args.plot_filename:
-        pf = args.plot_filename if args.plot_filename.endswith('.svg') else '{}.svg'.format(args.plot_filename)
-        plt.savefig(pf)
-
-    plt.show()
+    pf = args.plot_filename
+    if not pf.endswith('.svg'): pf += '.svg'
+    plt.savefig(pf)

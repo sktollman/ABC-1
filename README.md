@@ -40,6 +40,12 @@ To load modules, run `modprobe`. (eg: `sudo modprobe -a tcp_vegas`). You should 
 
 # Reproduction
 
+To generate the graphs in our report, run:
+```
+$ sh run_experiments.sh
+```
+When this completes, the plots will be saved as `figure2a_plot.svg` and `figure2b_plot.svg`
+
 ## Figure 2
 
 `experiments.py` contains the code to reproduce Figure 2 (as well as other figures). This runs traces against each protocol and optionally saves the utilization and delay results to a csv file. The `--schemes` command-line parameter takes in a comma-separated list of protocols to run.  If the option is not given, results for all protocols are generated. The `--experiment` parameter takes a string in `figure2a, figure2b, bothlinks` according to which experiment we are running.
@@ -52,10 +58,12 @@ Lastly, the command-line parameter `--csv-out` allows you to specify a filename 
 
 ### Generating Figure Plots
 
-`figure2_plot.py` takes a csv results file from `experiments.py` and creates a matplotlib graph with the same format as the figure from the original paper.
+`figure2_plot.py [data-filename] [plot-filename]` takes a csv results file from `experiments.py` and creates a matplotlib graph with the same format as the figure from the original paper.
+
+`--original-figure` is an optional argument that plots the provided data in comparison to the results from the original ABC paper.
 
 Example:
 ```
-$ python figure2.py --experiment figure2a --reuse-results all --csv-out results
-$ python figure2_plot.py --data-filename results.csv --plot-filename plot
+$ python experiment.py --schemes all --experiment figure2a --csv-out results.csv
+$ python figure2_plot.py results.csv plot.svg -o 2a
 ```
