@@ -27,5 +27,8 @@ sh install_kernel_cc.sh
 # Make start-tcp executable
 chmod +x start-tcp.sh
 
+# Make a full length 140-second 48 Mbps mahi file
+python make_mahi_trace.py --length 140000 -bw 48 > bw48.mahi
+
 # Setup Pantheon
 sh setup/setup_pantheon.sh 

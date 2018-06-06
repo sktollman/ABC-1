@@ -2,6 +2,6 @@
   "prep_commands": ["python ~/pantheon/src/wrappers/sprout.py receiver 9090"],
   "mahimahi_command": "python ~/pantheon/src/wrappers/sprout.py sender $MAHIMAHI_BASE 9090",
   "cleanup_commands": ["killall sender", "killall receiver", "killall sproutbt2"],
-  "uplink_queue": "infinite",
-  "uplink_queue_args": ""
+  "uplink_queue": "droptail",
+  "uplink_queue_args": "packets=100"
 }

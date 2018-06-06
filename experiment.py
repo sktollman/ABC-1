@@ -94,12 +94,12 @@ def run_cmds(cmds, verbose=False):
 
                 if c_type == "prep":
                     proc = Popen(
-                            shlex.split(c)#, stdout=devnull, stderr=devnull
+                            shlex.split(c), stdout=devnull, stderr=devnull
                             )
                 else:
                     proc = Popen(
-                            c, shell=True#, stdout=devnull,
-                            #stderr=devnull
+                            c, shell=True, stdout=devnull,
+                            stderr=devnull
                             )
 
                 processes.append(proc)
@@ -121,6 +121,22 @@ def run_cmds(cmds, verbose=False):
                 p.kill()
             except OSError:
                 pass
+
+def run_fig1_exp(schemes, traces, args, run_full):
+    """ Runs experiments to reproduce 
+    results of figure 1 in ABC paper.
+    """
+    
+    # For all of these experiments, we use a fixed
+    # 48 Mbps downlink.  
+    
+    for scheme in schemes:
+        print(" ---- Running Figure 1 Experiment for protocol: %s ---\n" % scheme)
+        
+        for trace in traces: 
+            print("   --> Running trace: %s" % trace)
+            upl
+            protocol = get_protocol(scheme, uplink)
 
 def run_fig2_exp(schemes, args, run_full):
     """ Runs experiments for the given schemes, in
@@ -180,8 +196,23 @@ def run_fig2_exp(schemes, args, run_full):
     
     print(" ---- Done ---- \n")
 
+# Contains all schemes used in the ABC paper, not
+# including LEDBAT, Copa, or PCC from the congestion control 
+# pantheon.
 ALL_SCHEMES = ['abc', 'cubic', 'sprout', 'verus', 'vegas', \
         'cubiccodel', 'cubicpie', 'bbr']
+
+# All cellular traces used in figure1. 
+ALL_FIG1_TRACES = [
+        'Verizon-LTE-short.up',\
+        'Verizon-LTE-driving.up', \
+        'TMobile-LTE-driving.up', \
+        'ATT-LTE-driving.up', \
+        'Verizon-LTE-short.down', \
+        'Verizon-LTE-driving.down', \
+        'TMobile-LTE-driving.up', \
+        'ATT-LTE-driving.down'
+]
 
 if __name__ == '__main__':
 
@@ -207,6 +238,10 @@ if __name__ == '__main__':
             nargs='+')
     skip.add_argument('--reuse-results', default=None,
             help='reuse existing results for the specified protocols', nargs='+')
+
+    # Figure 1 args
+    parser.add_argument('--traces', default=None, nargs='+',
+            help='list of traces to run for figure 1; runs all if given \'all\' or empty')
     
     args = parser.parse_args()
     
@@ -219,6 +254,12 @@ if __name__ == '__main__':
         schemes = args.schemes
     else:
         schemes = ALL_SCHEMES
+
+    # What traces to use? (fig1)
+    if args.traces:
+        traces = args.traces
+    else:
+        traces = ALL_FIG1_TRACES
     
     # What schemes to run in full and which to reuse results from?
     run_full = schemes
@@ -236,6 +277,8 @@ if __name__ == '__main__':
     if args.experiment == "figure2a" or args.experiment == "figure2b" \
             or args.experiment == "bothlinks" or args.experiment == "pa1":
         run_fig2_exp(schemes, args, run_full)
+    elif args.experiment == "figure1":
+        run_fig1_exp(schemes, traces, args, run_full)
     else:
         raise NotImplementedError("Unknown experiment: %s" % args.experiment)
     
