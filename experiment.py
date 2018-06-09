@@ -1,8 +1,8 @@
 #!/usr/bin/python
 
 #
-# Runs experiments to generate the figures in our
-# ABC reproduction.
+# Runs experiments to generate the figures in 
+# ABC HotNets 2017 paper.
 #
 
 from subprocess import Popen
@@ -19,23 +19,24 @@ import shlex
 TRACE_DIR = '~/ABC-1/mahimahi/traces/'
 BW_TRACE_DIR = '~/ABC-1'
 
-STATIC_BW = 'bw48.mahi'
+STATIC_BW_FIXED = 'bw48-fixed.mahi'
+STATIC_BW_VARIABLE = 'bw48-variable.mahi'
 
-UPLINK_LOG_FILE_FMT = 'logs/{}-UPLINK_{}-DOWNLINK_{}.log'
-RESULTS_FILE_FMT = 'results/{}-UPLINK_{}-DOWNLINK_{}.txt'
-
-Stats = namedtuple('Stats', ['util', 'delay', 'throughput', 'power', 'queuing_delay'])
+# Becomes populated with experiment results for figure 2. 
+Stats = namedtuple(
+        'Stats', 
+        ['util', 'delay', 'throughput', 'power', \
+         'queuing_delay', 'per_packet_delay', 'uplink_trace', 'downlink_trace']
+)
 stats = dict()
 
-def print_fig2_results(cc_proto):
-    """ Prints results for a figure 2 - type experiment.
+def retrieve_and_print_stats(cc_proto, rtt, uplink_trace, downlink_trace):
+    """ Prints results for a figure 1, 2 - type experiment.
 
     Additionally, saves statistics to the "stats" global
     variable.
     """
-
     proto_name = cc_proto.config['name']
-
     if os.path.isfile(cc_proto.results_file_path):
         with open(cc_proto.results_file_path) as f:
             lines = f.readlines()
@@ -45,16 +46,24 @@ def print_fig2_results(cc_proto):
             signal_delay = float(lines[3].split(' ')[4])
 
             utilization = avg_throughput / avg_capacity
+
+            per_packet_delay = rtt + queuing_delay
             power_score = 1000 * avg_throughput / float(signal_delay)
 
-            stats[proto_name] = Stats(utilization, signal_delay, avg_throughput, power_score, queuing_delay)
+            stats[proto_name] = Stats(
+                    utilization, signal_delay, avg_throughput, 
+                    power_score, queuing_delay, per_packet_delay,
+                    uplink_trace, downlink_trace
+            )
 
             print("\n  ~~ Results for protocol: %s ~~" % proto_name)
             print("\tutilization: %s%%" % str(round(100 * utilization, 2)))
-            print("\tthroughput: %s" % str(avg_throughput))
-            print("\tsignal delay: %s" % str(signal_delay))
-            print("\tqueuing delay: %s" % str(queuing_delay))
-            print("\tpower score: %s\n" % str(power_score))
+            print("\tthroughput: %s Mbps" % str(avg_throughput))
+            print("\tsignal delay: %s ms" % str(signal_delay))
+            print("\tqueuing delay: %s ms" % str(queuing_delay))
+            print("\tpower score: %s" % str(power_score))
+            print("\tavg capacity: %s Mbps" % str(avg_capacity))
+            print("\tper-packet delay: %s ms\n" % str(per_packet_delay))
 
     else:
         print("No results found for proto %s at path: %s" 
@@ -113,13 +122,74 @@ def run_cmds(cmds, verbose=False):
 
     devnull.close()
    
-    # Kill all lingering processes
+    # Attempt to kill all lingering processes
     for p in processes:
         if p:
             try:
                 p.kill()
             except OSError:
                 pass
+
+def make_bw_file(ref_trace, bw_trace, bw):
+    """Generates bw*.mahi file at bw_trace to match
+    the exact length of ref_trace, with bw Mbps bandwidth.
+    """
+    if bw % 12 != 0:
+        raise ValueError("Can only create files of bandwidth multiples of 12")
+    
+    length = 0
+    with open(os.path.expanduser(ref_trace), 'r') as f:
+        for line in f:
+            pass
+        length = int(line.strip())
+
+    with open(os.path.expanduser(bw_trace), 'w') as f:
+        for i in range(1, length+1):
+            for _ in range(bw / 12):
+                f.write("%d\n" % i)
+
+def run_fig1_exp(schemes, traces, args, run_full):
+    """ Runs experiments to reproduce 
+    results of figure 1 in original ABC HotNets 2017 paper.
+    """
+    
+    # For all of these experiments, we use a fixed
+    # 48 Mbps downlink, and an mm-delay of 50 ms. 
+
+    delay = 50
+    bw = 48
+    downlink_ext = STATIC_BW_VARIABLE
+    downlink_trace = os.path.join(BW_TRACE_DIR, downlink_ext)
+    
+    for scheme in schemes:
+        print(" ---- Running Figure 1 Experiment for protocol: %s ---\n" % scheme)
+
+        for trace in traces:
+
+            uplink_trace = os.path.join(TRACE_DIR, trace)
+            if args.tiny_trace:
+                uplink_trace += "-tiny"
+
+            print("   --> Running trace: %s\n" % uplink_trace)
+            protocol = get_protocol(scheme, trace, downlink_ext, figure="figure1")
+            cmds = protocol.get_figure1_cmds(delay, uplink_trace, downlink_trace, args)
+
+            if (scheme, trace) in run_full:
+                make_bw_file(uplink_trace, downlink_trace, bw)
+                run_cmds(cmds, args.verbose)
+            else:
+                print(" experiment skipped: (%s, %s)" % (scheme, trace))
+
+            time.sleep(2)
+            
+            uplink_trace_name = os.path.basename(uplink_trace)
+            downlink_trace_name = os.path.basename(downlink_trace)
+
+            retrieve_and_print_stats(
+                    protocol, 2 * delay, uplink_trace_name, downlink_trace_name
+            )
+        time.sleep(2)
+
 
 def run_fig2_exp(schemes, args, run_full):
     """ Runs experiments for the given schemes, in
@@ -136,12 +206,12 @@ def run_fig2_exp(schemes, args, run_full):
     
     if exp == 'figure2a':
         uplink_ext = 'Verizon-LTE-short.up'
-        downlink_ext = STATIC_BW
+        downlink_ext = STATIC_BW_FIXED
         uplink_trace = os.path.join(TRACE_DIR, uplink_ext)
         downlink_trace = os.path.join(BW_TRACE_DIR, downlink_ext)
     elif exp == 'figure2b':
         uplink_ext = 'Verizon-LTE-short.down'
-        downlink_ext = STATIC_BW
+        downlink_ext = STATIC_BW_FIXED
         uplink_trace = os.path.join(TRACE_DIR, uplink_ext)
         downlink_trace = os.path.join(BW_TRACE_DIR, downlink_ext)
     elif exp == 'bothlinks':
@@ -173,14 +243,76 @@ def run_fig2_exp(schemes, args, run_full):
            run_cmds(cmds, args.verbose)
         else:
             print(" Experiment skipped ")
-
-        print_fig2_results(protocol)
+        
+        uplink_trace_name = os.path.basename(uplink_trace)
+        downlink_trace_name = os.path.basename(downlink_trace)
+        retrieve_and_print_stats(protocol, delay * 2, uplink_trace_name, downlink_trace_name)
         time.sleep(2)
     
     print(" ---- Done ---- \n")
 
+def fig2_get_run_full(args, schemes):
+    """Given a list of schemes, returns
+    a list of schemes to be run in full for figure2.
+    """
+    run_full = schemes
+    if args.reuse_results:
+        if args.reuse_results == ['all']:
+            run_full = []
+        else:
+            run_full = [s for s in schemes if s not in args.reuse_results]
+    elif args.run_full:
+        if args.run_full == ['all']:
+            run_full = schemes
+        else:
+            run_full = [s for s in schemes if s not in args.run_full]
+    return run_full
+
+def fig1_get_run_full(args, schemes, traces):
+    """Given a list of schemes and traces, returns
+    a list of scheme/trace pairs to be run in full.
+    """
+    reuse_results = args.reuse_results_fig1
+    if reuse_results:
+        if reuse_results == ['all']:
+            run_full = []
+        else:
+            pairs_to_skip = []
+            for reuse in reuse_results:
+                scheme, trace = [s.strip() for s in reuse.split(':')]
+                if scheme == 'all':
+                    for s in schemes:
+                        pairs_to_skip.append((s, trace))
+                elif trace == 'all':
+                    for t in traces:
+                        pairs_to_skip.append((scheme, t))
+                else:
+                    pairs_to_skip.append((scheme, trace))
+            
+            run_full = [(s, t) for s in schemes for t in traces \
+                                    if (s, t) not in pairs_to_skip]
+    else:
+        run_full = [(s, t) for s in schemes for t in traces]
+
+    return run_full
+
+# Contains all schemes used in the ABC paper, not
+# including LEDBAT, Copa, or PCC from the congestion control 
+# pantheon.
 ALL_SCHEMES = ['abc', 'cubic', 'sprout', 'verus', 'vegas', \
         'cubiccodel', 'cubicpie', 'bbr']
+
+# All cellular traces used in figure1. 
+ALL_FIG1_TRACES = [
+        'Verizon-LTE-short.up',\
+        'Verizon-LTE-driving.up', \
+        'TMobile-LTE-driving.up', \
+        'ATT-LTE-driving.up', \
+        'Verizon-LTE-short.down', \
+        'Verizon-LTE-driving.down', \
+        'TMobile-LTE-driving.down', \
+        'ATT-LTE-driving.down'
+]
 
 if __name__ == '__main__':
 
@@ -188,7 +320,7 @@ if __name__ == '__main__':
     parser.add_argument('--schemes', default=None, nargs='+',
         help='list of protocols to run from scratch; runs all if empty')
     parser.add_argument('--experiment', default="figure2a", type=str,
-        help='The experiment to run: e.g. figure2a, figure2b, bothlinks')
+        help='The experiment to run: e.g. figure1, figure2a, figure2b, bothlinks')
     parser.add_argument('--csv-out', default=None, type=str,
         help='save results to CSV file with this name')
 
@@ -205,7 +337,14 @@ if __name__ == '__main__':
             help='perform a full run for the specified protocols',
             nargs='+')
     skip.add_argument('--reuse-results', default=None,
-            help='reuse existing results for the specified protocols', nargs='+')
+            help='(fig 2) reuse existing results for the specified protocols', nargs='+')
+
+    # Figure 1 args
+    parser.add_argument('--traces', default=None, nargs='+',
+            help='(Fig 1) list of traces to run for figure 1; runs all if given \'all\' or empty')
+    parser.add_argument('--reuse-results-fig1', default=None, nargs='+',
+            help='(Fig 1) list of <protocol>:<trace> pairs to reuse existing results for: \
+                    can give \'all\' to reuse everything specified, or <protocol>:all, all:<trace>')
     
     args = parser.parse_args()
     
@@ -218,23 +357,22 @@ if __name__ == '__main__':
         schemes = args.schemes
     else:
         schemes = ALL_SCHEMES
+
+    # What traces to use? (fig1)
+    if args.traces:
+        traces = args.traces
+    else:
+        traces = ALL_FIG1_TRACES
     
     # What schemes to run in full and which to reuse results from?
-    run_full = schemes
-    if args.reuse_results:
-        if args.reuse_results == ['all']:
-            run_full = []
-        else:
-            run_full = [s for s in schemes if s not in args.reuse_results]
-    elif args.run_full:
-        if args.run_full == ['all']:
-            run_full = schemes
-        else:
-            run_full = [s for s in schemes if s not in args.run_full]
-    
+        
     if args.experiment == "figure2a" or args.experiment == "figure2b" \
             or args.experiment == "bothlinks" or args.experiment == "pa1":
+        run_full = fig2_get_run_full(args, schemes)
         run_fig2_exp(schemes, args, run_full)
+    elif args.experiment == "figure1":
+        run_full = fig1_get_run_full(args, schemes, traces)
+        run_fig1_exp(schemes, traces, args, run_full)
     else:
         raise NotImplementedError("Unknown experiment: %s" % args.experiment)
     
@@ -246,5 +384,9 @@ if __name__ == '__main__':
         
         with open(args.csv_out, 'w') as f:
             for proto, s in stats.items():
-                f.write('{}, {}, {}, {}, {}, {}\n'.format(proto, 
-                    s.util, s.delay, s.throughput, s.power, s.queuing_delay))
+                f.write('{}, {}, {}, {}, {}, {}, {}, {}\n'.format(
+                        proto, s.util, s.delay, s.throughput, 
+                        s.power, s.queuing_delay, s.per_packet_delay, 
+                        s.uplink_trace, s.downlink_trace
+                    )
+                )

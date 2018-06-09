@@ -4,6 +4,8 @@
 *.csv
 *.svg
 
+bw48-variable.mahi
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

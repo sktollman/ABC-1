@@ -96,7 +96,7 @@ if __name__ == '__main__':
     stats = dict()
     with open(args.data_filename) as f:
         for l in f:
-            proto, util, delay, throughput, power, queuing_delay = l.split(', ')
+            proto, util, delay, throughput, power, queuing_delay, _, _, _ = l.split(', ')
             stats[proto] = Stats(float(util), float(queuing_delay) + RTT)
 
     plt.xlabel('95th percentile packet delay (ms)')
@@ -107,7 +107,9 @@ if __name__ == '__main__':
     rc('ytick', labelsize=10)
 
     ax1 = plt.subplot(111)
-    ax1.set_ylim(.3, 1.0)
+
+    y_lower_bound = .1 if 'sprout' in stats else .3
+    ax1.set_ylim(y_lower_bound, 1.0)
 
     # log scale for x axis
     # use scalar not scientific format and
