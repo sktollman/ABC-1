@@ -43,10 +43,12 @@ class CCProtocol:
         for arg in extra_args:
             self.config[arg] = extra_args[arg]
 
-    def get_figure1_cmds(self):
+    def get_figure1_cmds(self, mm_delay, uplink_trace, downlink_trace, args):
         """ Returns list of commands to run to generate Figure 1 results.
         """
-        raise NotImplementedError
+
+        # These are actually exactly the same as figure 2 commands. 
+        return self.get_figure2_cmds(mm_delay, uplink_trace, downlink_trace, args)
 
     def get_figure2_cmds(self, mm_delay, uplink_trace, downlink_trace, args):
         """ Returns ordered dictionary of commands
