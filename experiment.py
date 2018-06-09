@@ -19,7 +19,8 @@ import shlex
 TRACE_DIR = '~/ABC-1/mahimahi/traces/'
 BW_TRACE_DIR = '~/ABC-1'
 
-STATIC_BW = 'bw48.mahi'
+STATIC_BW_FIXED = 'bw48-fixed.mahi'
+STATIC_BW_VARIABLE = 'bw48-variable.mahi'
 
 # Becomes populated with experiment results for figure 2. 
 Stats = namedtuple(
@@ -129,6 +130,24 @@ def run_cmds(cmds, verbose=False):
             except OSError:
                 pass
 
+def make_bw_file(ref_trace, bw_trace, bw):
+    """Generates bw*.mahi file at bw_trace to match
+    the exact length of ref_trace, with bw Mbps bandwidth.
+    """
+    if bw % 12 != 0:
+        raise ValueError("Can only create files of bandwidth multiples of 12")
+    
+    length = 0
+    with open(os.path.expanduser(ref_trace), 'r') as f:
+        for line in f:
+            pass
+        length = int(line.strip())
+
+    with open(os.path.expanduser(bw_trace), 'w') as f:
+        for i in range(1, length+1):
+            for _ in range(bw / 12):
+                f.write("%d\n" % i)
+
 def run_fig1_exp(schemes, traces, args, run_full):
     """ Runs experiments to reproduce 
     results of figure 1 in original ABC HotNets 2017 paper.
@@ -138,10 +157,9 @@ def run_fig1_exp(schemes, traces, args, run_full):
     # 48 Mbps downlink, and an mm-delay of 50 ms. 
 
     delay = 50
-    downlink_ext = STATIC_BW
+    bw = 48
+    downlink_ext = STATIC_BW_VARIABLE
     downlink_trace = os.path.join(BW_TRACE_DIR, downlink_ext)
-    if args.tiny_trace:
-        downlink_trace += "-tiny"
     
     for scheme in schemes:
         print(" ---- Running Figure 1 Experiment for protocol: %s ---\n" % scheme)
@@ -157,6 +175,7 @@ def run_fig1_exp(schemes, traces, args, run_full):
             cmds = protocol.get_figure1_cmds(delay, uplink_trace, downlink_trace, args)
 
             if (scheme, trace) in run_full:
+                make_bw_file(uplink_trace, downlink_trace, bw)
                 run_cmds(cmds, args.verbose)
             else:
                 print(" experiment skipped: (%s, %s)" % (scheme, trace))
@@ -187,12 +206,12 @@ def run_fig2_exp(schemes, args, run_full):
     
     if exp == 'figure2a':
         uplink_ext = 'Verizon-LTE-short.up'
-        downlink_ext = STATIC_BW
+        downlink_ext = STATIC_BW_FIXED
         uplink_trace = os.path.join(TRACE_DIR, uplink_ext)
         downlink_trace = os.path.join(BW_TRACE_DIR, downlink_ext)
     elif exp == 'figure2b':
         uplink_ext = 'Verizon-LTE-short.down'
-        downlink_ext = STATIC_BW
+        downlink_ext = STATIC_BW_FIXED
         uplink_trace = os.path.join(TRACE_DIR, uplink_ext)
         downlink_trace = os.path.join(BW_TRACE_DIR, downlink_ext)
     elif exp == 'bothlinks':
