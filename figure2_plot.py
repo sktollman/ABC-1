@@ -96,7 +96,7 @@ if __name__ == '__main__':
     stats = dict()
     with open(args.data_filename) as f:
         for l in f:
-            proto, util, delay, throughput, power, queuing_delay, _, _ = l.split(', ')
+            proto, util, delay, throughput, power, queuing_delay, _, _, _ = l.split(', ')
             stats[proto] = Stats(float(util), float(queuing_delay) + RTT)
 
     plt.xlabel('95th percentile packet delay (ms)')
