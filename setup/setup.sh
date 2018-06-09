@@ -1,6 +1,6 @@
 #
 # Script to set up experiment environment.
-#   
+#
 #   Should only need to be run once,
 #   ideally inside a virtual env.
 #
@@ -25,10 +25,10 @@ cd ~/ABC-1
 sh install_kernel_cc.sh
 
 # Make start-tcp executable
-chmod +x start-tcp.sh
+chmod +x start_tcp.sh
 
 # Make a full length 140-second 48 Mbps mahi file
 python make_mahi_trace.py --length 140000 -bw 48 > bw48.mahi
 
 # Setup Pantheon
-sh setup/setup_pantheon.sh 
+sh setup/setup_pantheon.sh

@@ -3,7 +3,7 @@
 #
 
 import os
-from protocols.cc_protocol import CCProtocol
+import CCProtocol
 
 UPLINK_LOG_FILE_FMT = 'logs/{}/{}/UPLINK_{}-DOWNLINK_{}.log'
 RESULTS_FILE_FMT = 'results/{}/{}/UPLINK_{}-DOWNLINK_{}.txt'
@@ -11,7 +11,7 @@ RESULTS_FILE_FMT = 'results/{}/{}/UPLINK_{}-DOWNLINK_{}.txt'
 def get_protocol(scheme, uplink_ext, downlink_ext, figure="figure2"):
     """Returns a CCProtocol object populated with
        the correct scheme arguments, ready to extract
-       figure commands from. 
+       figure commands from.
 
     Args:
         scheme: (str) what scheme to return CCProtocol for
@@ -19,7 +19,7 @@ def get_protocol(scheme, uplink_ext, downlink_ext, figure="figure2"):
         downlink_ext: (str) the name of the downlink trace file
 
     """
-    
+
     config_file_path = None
     results_file_path = RESULTS_FILE_FMT.format(
             figure, scheme, uplink_ext, downlink_ext
@@ -35,7 +35,7 @@ def get_protocol(scheme, uplink_ext, downlink_ext, figure="figure2"):
     if not os.path.exists(log_dir): os.makedirs(log_dir)
 
     extra_config = {}
-    
+
     if scheme == "abc":
         config_file_path = 'protocols/config/abc.json'
 
@@ -51,7 +51,7 @@ def get_protocol(scheme, uplink_ext, downlink_ext, figure="figure2"):
     elif scheme == "vegas":
         config_file_path = 'protocols/config/cubic.json'
         extra_config['name'] = 'vegas'
-        extra_config['mahimahi_command'] = 'sh start-tcp.sh vegas'
+        extra_config['mahimahi_command'] = 'sh ../start-tcp.sh vegas'
 
     elif scheme == "cubiccodel":
         config_file_path = 'protocols/config/cubic.json'
@@ -68,11 +68,11 @@ def get_protocol(scheme, uplink_ext, downlink_ext, figure="figure2"):
     elif scheme == "bbr":
         config_file_path = 'protocols/config/cubic.json'
         extra_config['name'] = 'bbr'
-        extra_config['mahimahi_command'] = 'sh start-tcp.sh bbr'
+        extra_config['mahimahi_command'] = 'sh ../start-tcp.sh bbr'
 
     elif scheme == "copa":
         config_file_path = 'protocols/config/copa.json'
-    
+
     elif scheme == "ledbat":
         config_file_path = 'protocols/config/ledbat.json'
 
