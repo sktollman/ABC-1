@@ -28,7 +28,7 @@ Stats = namedtuple(
         ['util', 'delay', 'throughput', 'power', \
          'queuing_delay', 'per_packet_delay', 'uplink_trace', 'downlink_trace']
 )
-stats = dict()
+stats = []
 
 def retrieve_and_print_stats(cc_proto, rtt, uplink_trace, downlink_trace):
     """ Prints results for a figure 1, 2 - type experiment.
@@ -50,11 +50,15 @@ def retrieve_and_print_stats(cc_proto, rtt, uplink_trace, downlink_trace):
             per_packet_delay = rtt + queuing_delay
             power_score = 1000 * avg_throughput / float(signal_delay)
 
-            stats[proto_name] = Stats(
+            stats_bundle = {}
+            
+            stats_bundle[proto_name] = Stats(
                     utilization, signal_delay, avg_throughput, 
                     power_score, queuing_delay, per_packet_delay,
                     uplink_trace, downlink_trace
             )
+
+            stats.append(stats_bundle)
 
             print("\n  ~~ Results for protocol: %s ~~" % proto_name)
             print("\tutilization: %s%%" % str(round(100 * utilization, 2)))
@@ -66,7 +70,7 @@ def retrieve_and_print_stats(cc_proto, rtt, uplink_trace, downlink_trace):
             print("\tper-packet delay: %s ms\n" % str(per_packet_delay))
 
     else:
-        print("No results found for proto %s at path: %s" 
+        print("No results found for proto %s at path: %s\n" 
                 % (proto_name, cc_proto.results_file_path))
 
 def run_cmds(cmds, verbose=False):
@@ -231,23 +235,47 @@ def run_fig2_exp(schemes, args, run_full):
     if args.tiny_trace:
         uplink_trace += "-tiny"
         downlink_trace += "-tiny"
+
+    num_runs = 1
+    if args.num_runs:
+        num_runs = args.num_runs
  
     # Run experiment for each scheme 
     for scheme in schemes:
         print(" ---- Running Experiment %s for protocol: %s ---- \n" % (exp, scheme))
-        protocol = get_protocol(scheme, uplink_ext, downlink_ext)
-        cmds = protocol.get_figure2_cmds(delay, uplink_trace, downlink_trace, args)
-        
-        
-        if scheme in run_full:
-           run_cmds(cmds, args.verbose)
-        else:
-            print(" Experiment skipped ")
-        
-        uplink_trace_name = os.path.basename(uplink_trace)
-        downlink_trace_name = os.path.basename(downlink_trace)
-        retrieve_and_print_stats(protocol, delay * 2, uplink_trace_name, downlink_trace_name)
-        time.sleep(2)
+        protocol = get_protocol(scheme, uplink_ext, downlink_ext, exp)
+        results_path, results_file = os.path.split(protocol.results_file_path)
+        log_path, log_file = os.path.split(protocol.uplink_log_file_path)
+
+        results_path_fmt = results_path + '/multiple/%d/' + results_file
+        log_path_fmt = log_path + '/multiple/%d/' + log_file
+ 
+        for i in range(1, num_runs + 1):
+            print("         -> Iteration: %d\n" % i)
+
+            if num_runs > 1:
+                curr_results_file = results_path_fmt % i
+                curr_log_file = log_path_fmt % i
+                
+                curr_log_path, _ = os.path.split(curr_log_file)
+                curr_results_path, _ = os.path.split(curr_results_file)
+
+                if not os.path.exists(curr_log_path): os.makedirs(curr_log_path) 
+                if not os.path.exists(curr_results_path): os.makedirs(curr_results_path)
+
+                protocol.results_file_path = curr_results_file
+                protocol.uplink_log_file_path = curr_log_file
+            
+            cmds = protocol.get_figure2_cmds(delay, uplink_trace, downlink_trace, args)
+            if scheme in run_full:
+                run_cmds(cmds, args.verbose)
+            else:
+                print(" Experiment skipped ")
+
+            uplink_trace_name = os.path.basename(uplink_trace)
+            downlink_trace_name = os.path.basename(downlink_trace)
+            retrieve_and_print_stats(protocol, delay * 2, uplink_trace_name, downlink_trace_name)
+            time.sleep(2)
     
     print(" ---- Done ---- \n")
 
@@ -328,6 +356,8 @@ if __name__ == '__main__':
             help='print throughput graph for each protocol')
     parser.add_argument('--tiny-trace', action='store_true',
             help='use a 5 second version of the Verizon/BW traces')
+    parser.add_argument('--num-runs', default=None, type=int,
+            help='(fig 2) run each experiment multiple times')
     
     parser.add_argument('--verbose', action='store_true',
             help='be verbose during the experiment')
@@ -376,6 +406,10 @@ if __name__ == '__main__':
     else:
         raise NotImplementedError("Unknown experiment: %s" % args.experiment)
     
+    if args.num_runs and args.csv_out:
+        raise ValueError("You must run the gather_multiple_results.py script to generate \
+                a CSV file when you run experiments multiple times.\n")
+
     # Output CSV file with results, if filename passed in arguments.
     if args.csv_out:
 
@@ -383,10 +417,11 @@ if __name__ == '__main__':
             args.filename = '{}.csv'.format(args.csv_out)
         
         with open(args.csv_out, 'w') as f:
-            for proto, s in stats.items():
-                f.write('{}, {}, {}, {}, {}, {}, {}, {}\n'.format(
-                        proto, s.util, s.delay, s.throughput, 
-                        s.power, s.queuing_delay, s.per_packet_delay, 
-                        s.uplink_trace, s.downlink_trace
+            for stats_bundle in stats:
+                for proto, s in stats_bundle.items():
+                    f.write('{}, {}, {}, {}, {}, {}, {}, {}, {}\n'.format(
+                            proto, s.util, s.delay, s.throughput, 
+                            s.power, s.queuing_delay, s.per_packet_delay, 
+                            s.uplink_trace, s.downlink_trace
+                        )
                     )
-                )
