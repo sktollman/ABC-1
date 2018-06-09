@@ -5,19 +5,18 @@
 # 2a, 2b, and 2 but with varying up and downlinks.
 #
 
-times_to_run_figs=2
+times_to_run_figs=5
 
 for i in {1..1000}
 do
 
-  echo 'MASTER ITERATION: $i'
+  echo "MASTER ITERATION: $i"
 
   # 1. Generate results for figure1
   python experiment.py \
     --experiment figure1 \
     --schemes abc sprout cubicpie cubiccodel verus vegas cubic bbr copa ledbat pcc \
     --csv-out figure1.csv \
-    --tiny-trace
 
   mv figure1.csv results/
   
@@ -26,14 +25,12 @@ do
     --experiment figure2a \
     --schemes abc sprout cubicpie cubiccodel verus vegas cubic bbr copa ledbat pcc \
     --num-runs $times_to_run_figs \
-    --tiny-trace
 
   # 3. Generate results for figure2b
   python experiment.py \
     --experiment figure2b \
     --schemes abc sprout cubicpie cubiccodel verus vegas cubic bbr copa ledbat pcc \
     --num-runs $times_to_run_figs \
-    --tiny-trace
 
 
   # 4. Generate results for figure2 bothlinks
