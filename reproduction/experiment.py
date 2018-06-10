@@ -8,7 +8,7 @@
 from subprocess import Popen
 from collections import namedtuple
 from protocols.cc_protocol import CCProtocol
-from protocols.cc_protocol.utils import get_protocol
+from protocols.utils import get_protocol
 
 import os
 import argparse
@@ -17,7 +17,7 @@ import sys
 import shlex
 
 TRACE_DIR = '~/ABC-1/mahimahi/traces/'
-BW_TRACE_DIR = '/traces/'
+BW_TRACE_DIR = '~/ABC-1/reproduction/traces/'
 
 STATIC_BW_FIXED = 'bw48-fixed.mahi'
 STATIC_BW_VARIABLE = 'bw48-variable.mahi'

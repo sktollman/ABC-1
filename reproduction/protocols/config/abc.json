@@ -1,7 +1,7 @@
 {
   "name": "abc",
-  "prep_commands": ["python server.py"],
-  "mahimahi_command": "python client.py",
+  "prep_commands": ["python abc/server.py"],
+  "mahimahi_command": "python abc/client.py",
   "cleanup_commands": [""],
   "uplink_queue": "cellular",
   "uplink_queue_args": "packets=100,qdelay_ref=50,beta=75"

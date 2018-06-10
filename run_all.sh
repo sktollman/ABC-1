@@ -38,7 +38,6 @@ do
     --experiment bothlinks \
     --schemes abc sprout cubicpie cubiccodel verus vegas cubic bbr copa ledbat pcc \
     --num-runs $times_to_run_figs \
-    --tiny-trace
 
   # 5. Gather results for 2a, 2b, and bothlinks
 

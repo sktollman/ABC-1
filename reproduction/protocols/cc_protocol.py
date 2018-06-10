@@ -7,6 +7,7 @@
 import json
 import pprint
 import collections
+import os
 
 class CCProtocol:
 
@@ -34,7 +35,7 @@ class CCProtocol:
         Any arguments in extra_args are added to the protocol's
         config dictionary, overwriting defaults from the JSON file.
         """
-        with open(config_file_path) as f:
+        with open(os.path.expanduser(config_file_path)) as f:
             self.config = json.load(f)
 
         self.results_file_path = results_file_path
