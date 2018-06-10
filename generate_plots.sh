@@ -10,6 +10,6 @@ python reproduction/plotting/figure2_plot.py results-1/figure2b.csv plots/figure
 # bothlinks
 python reproduction/plotting/figure2_plot.py results-1/bothlinks.csv plots/bothlinks.svg
 # figure 2a + extra protos
-python reproduction/plotting/figure2_plot.py results-1/figure2a.csv plots/figure2a.svg -o 2a -c
+python reproduction/plotting/figure2_plot.py results-1/figure2a.csv plots/figure2a_extra.svg -o 2a -c
 # figure 2b + extra protos
-python reproduction/plotting/figure2_plot.py results-1/figure2b.csv plots/figure2b.svg -o 2b -c
+python reproduction/plotting/figure2_plot.py results-1/figure2b.csv plots/figure2b_extra.svg -o 2b -c
