@@ -1,12 +1,13 @@
 #
 # Defines base class for a Congestion Control
-# protocol used to run experiments for our 
+# protocol used to run experiments for our
 # reproduction of the ABC paper.
 #
 
 import json
 import pprint
 import collections
+import os
 
 class CCProtocol:
 
@@ -22,21 +23,21 @@ class CCProtocol:
     mahimahi_queue_args_fmt = "--{target_link}-queue={queue} \
             --{target_link}-queue-args=\"{queue_args}\""
 
-    def __init__(self, config_file_path, results_file_path, 
+    def __init__(self, config_file_path, results_file_path,
             uplink_log_file_path, extra_args):
-        """Constructs class representing a testable protocol. 
+        """Constructs class representing a testable protocol.
 
         This class houses the configuration for a congestion
         control protocol and returns commands to run to generate
         various figures in our reproduction of ABC.
-        
-        Reads a configuration dict from the specified JSON file. 
-        Any arguments in extra_args are added to the protocol's 
+
+        Reads a configuration dict from the specified JSON file.
+        Any arguments in extra_args are added to the protocol's
         config dictionary, overwriting defaults from the JSON file.
         """
-        with open(config_file_path) as f:
+        with open(os.path.expanduser(config_file_path)) as f:
             self.config = json.load(f)
-        
+
         self.results_file_path = results_file_path
         self.uplink_log_file_path = uplink_log_file_path
 
@@ -47,7 +48,7 @@ class CCProtocol:
         """ Returns list of commands to run to generate Figure 1 results.
         """
 
-        # These are actually exactly the same as figure 2 commands. 
+        # These are actually exactly the same as figure 2 commands.
         return self.get_figure2_cmds(mm_delay, uplink_trace, downlink_trace, args)
 
     def get_figure2_cmds(self, mm_delay, uplink_trace, downlink_trace, args):
@@ -60,7 +61,7 @@ class CCProtocol:
         else:
             queue_args = self.mahimahi_queue_args_fmt.format(
                     target_link=target_link,
-                    queue=self.config['uplink_queue'], 
+                    queue=self.config['uplink_queue'],
                     queue_args=self.config['uplink_queue_args']
             )
 
@@ -72,7 +73,7 @@ class CCProtocol:
                 queue_args=queue_args, uplink=uplink_trace,
                 downlink=downlink_trace, mahimahi_command=self.config['mahimahi_command']
         )
-        
+
         graph_out = '/dev/null'
         if args.print_graph:
             graph_out = 'graphs/%s_graph.svg' % self.config['name']
@@ -81,7 +82,7 @@ class CCProtocol:
                 graph_file=graph_out)
 
         cleanup_commands = self.config['cleanup_commands']
-        
+
         commands = [("prep", prep_commands),
                     ("mahimahi", [mahimahi_cmd]),
                     ("cleanup", cleanup_commands),
@@ -91,13 +92,10 @@ class CCProtocol:
 
     def show(self):
         """Pretty print thyself
-        
+
         """
         print(" ======== Protocol ======== \n")
         print("            Name: %s" % self.name)
         print("    Results path: %s" % self.results_file_path)
         print(" Uplink log path: %s" % self.uplink_log_file_path)
         pprint.pprint(self.config)
-
-    
-      

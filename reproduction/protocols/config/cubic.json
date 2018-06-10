@@ -1,7 +1,7 @@
 {
   "name": "cubic",
   "prep_commands": ["iperf -s -t 10000 -p 42425 -w 16m"],
-  "mahimahi_command": "sh start-tcp.sh cubic",
+  "mahimahi_command": "sh ~/ABC-1/start_tcp.sh cubic",
   "cleanup_commands": ["killall iperf", "killall iperf"],
   "uplink_queue": "droptail",
   "uplink_queue_args": "packets=100"
